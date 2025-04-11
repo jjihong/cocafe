@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../screens/home.dart';
 
@@ -10,11 +11,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      theme: ThemeData(),
+      theme: ThemeData(
+        textTheme: GoogleFonts.doHyeonTextTheme(),
+      ),
       debugShowCheckedModeBanner: false,
-      title: 'CoCa(Coding Cafe)',
+      title: 'cocafe',
       getPages: [
-        GetPage(name:"/", page: ()=> Home()),
+        GetPage(name: "/", page: () => Home()),
       ],
     );
   }
