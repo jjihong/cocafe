@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,7 @@ void main() async {
   KakaoSdk.init(
     nativeAppKey: '7f91f980c97d305201065841b4be0025',
   );
+  await Firebase.initializeApp();
   final townController = Get.put(TownController());
   await townController.loadSelectedTown();
   runApp(const MyApp());

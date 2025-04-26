@@ -20,6 +20,7 @@ class MapController {
       return;
     }
 
+
     try {
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
@@ -55,5 +56,12 @@ class MapController {
     }
 
     return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
+  }
+
+  Future<LatLng> getCenter() async {
+    if (_controller == null) {
+      throw Exception('KakaoMapController is not initialized');
+    }
+    return await _controller!.getCenter();
   }
 }

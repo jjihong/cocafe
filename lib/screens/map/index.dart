@@ -13,7 +13,7 @@ class MapIndex extends StatefulWidget {
 class _MapIndexState extends State<MapIndex> {
   final mapController = MapController();
   List<String> selectedCategories = [];
-
+  Set<Marker> markers = {}; // 마커를 담는 리스트
 
   @override
   void initState() {
@@ -41,12 +41,20 @@ class _MapIndexState extends State<MapIndex> {
       body: Stack(
         children: [
           KakaoMap(
-            onMapCreated: (controller) {
+            onMapCreated: ((controller) async {
               mapController.setController(controller);
+
+              markers.add(Marker(
+                markerId: UniqueKey().toString(),
+                latLng: await mapController.getCenter(),
+              ));
+
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 await mapController.moveToCurrentLocation();
               });
-            },
+            }),
+            markers: markers.toList(), // 마커 표시
+            center: LatLng(37.566317, 126.977829),
             onMapTap: (latLng) {
               debugPrint('[DEBUG] 지도 탭: ${latLng.toString()}');
             },

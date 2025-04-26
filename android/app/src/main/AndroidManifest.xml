@@ -36,6 +36,7 @@
             android:name="com.naver.maps.map.NCP_KEY_ID"
             android:value="6tvut22aak" />
     </application>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />

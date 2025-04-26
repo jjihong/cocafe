@@ -1,3 +1,4 @@
+import 'package:cocafe/screens/feed/post.dart';
 import 'package:cocafe/screens/feed/town.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
 import '../../controllers/towncontroller.dart';
+import '../../widgets/listitems/post_listitem.dart';
 
 class FeedIndex extends StatefulWidget {
   const FeedIndex({super.key});
@@ -46,13 +48,29 @@ class _FeedIndexState extends State<FeedIndex> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // 글쓰기 버튼을 눌렀을 때의 동작 추가
-          // 예를 들어, 글쓰기 페이지로 이동하거나 다이얼로그를 띄우는 등의 동작을 추가할 수 있음.
-          // Get.to(() => const WritePostPage()); // 글쓰기 페이지로 이동하는 예시
+          Get.to(() => Post());
         },
-        child: const Icon(Icons.add, color: Colors.white,), // 플로팅 버튼 아이콘 (여기서는 '+' 아이콘)
-        backgroundColor: Colors.black, // 플로팅 버튼의 배경색
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
+        // 플로팅 버튼 아이콘 (여기서는 '+' 아이콘)
+        backgroundColor: Colors.black,
+        // 플로팅 버튼의 배경색
         shape: const CircleBorder(), // 동그라미 모양을 확실히 설정
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        itemCount: dummyPosts.length,
+        itemBuilder: (context, index) {
+          final post = dummyPosts[index];
+          return PostListItem(
+            thumbnailUrl: post.imageUrl,
+            title: post.title,
+            shopName: post.shopName,
+            likeCount: post.likeCount,
+          );
+        },
       ),
     );
   }
@@ -88,3 +106,29 @@ class _FeedIndexState extends State<FeedIndex> {
     });
   }
 }
+
+// 임시용 더미 데이터
+class PostModel {
+  final String title;
+  final String shopName;
+  final String imageUrl;
+  final int likeCount;
+
+  PostModel({
+    required this.title,
+    required this.shopName,
+    required this.imageUrl,
+    required this.likeCount,
+  });
+}
+
+final List<PostModel> dummyPosts = [
+  PostModel(
+    title: '주5일~4시간(주말 포함) 21312짧게 근무!!',
+    shopName: '인창동 · 알바',
+    imageUrl: 'https://i.namu.wiki/i/MIcM4D9MLjTDkRanLrqMjs_7HS7HuaDB7o2Wq_Dz0Cih4ARtmyrfll5zFGqb56tPFEDo0fuSVsIVGGk9A3xOROteYKXUlzeUtrYa6jyGl7saElt-O8dE4QCNukIqQBsQNq44dsqek2EcviPQ-fNVEw.webp',
+    likeCount: 18,
+  ),
+  // 추가 더미...
+];
+

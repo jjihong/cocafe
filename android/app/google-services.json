@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "378153042949",
+    "project_id": "cocafe-14193",
+    "storage_bucket": "cocafe-14193.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:378153042949:android:f4983c94058acfbd5b886c",
+        "android_client_info": {
+          "package_name": "com.example.jjihong.cocafe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFchfVe30Tip-s9DPNfKbrLgwVnEUPNfM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
