@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../controllers/postcontroller.dart';
+import '../../models/place.dart';
 import '../../widgets/buttons/submit_button.dart';
 import '../../widgets/images/post_photo_picker.dart';
 import '../../widgets/textfields/custom_text_field.dart';
+import 'address.dart';
 
 class Post extends StatelessWidget {
   Post({super.key});
@@ -50,6 +52,14 @@ class Post extends StatelessWidget {
                     CustomTextField(
                       controller: controller.shopNameController,
                       label: '가게 이름',
+                      readOnly: true, // 직접 타이핑 못하게 막아
+                      onTap: () async {
+                        final Place? result = await Get.to(() => const AddressSearchScreen());
+                        if (result != null) {
+                          controller.shopNameController.text = result.name;
+                          controller.addressController.text = result.roadAddress ?? result.address;
+                        }
+                      },
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
