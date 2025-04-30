@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import '../../models/place.dart';
@@ -17,7 +18,7 @@ class _AddressSearchScreenState extends State<AddressSearchScreen> {
   bool _loading = false;
 
   // 발급받은 REST API 키 (앞에 "KakaoAK " 붙이세요)
-  static const _restApiKey = 'KakaoAK 7f91f980c97d305201065841b4be0025';
+  static final String _restApiKey = dotenv.get('KAKAO_REST_API_KEY');
 
   Future<void> _search() async {
     final q = _searchCtrl.text.trim();

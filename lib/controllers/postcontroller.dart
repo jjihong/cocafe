@@ -24,13 +24,14 @@ class PostController extends GetxController {
   // 내가 올릴 이미지, 태그
   var images = <XFile>[].obs;
   final RxList<String> selectedTags = <String>[].obs;
-
   final List<Map<String, dynamic>> tagOptions = [
     {'label': '코드 많은', 'icon': Icons.electric_bolt},
     {'label': '2층 이상', 'icon': Icons.looks_two_rounded},
     {'label': '조용한', 'icon': Icons.volume_mute},
     {'label': '스터디룸', 'icon': Icons.book},
   ];
+
+  // 임시저장
 
   // 이미지 선택
   Future<void> pickImages() async {
