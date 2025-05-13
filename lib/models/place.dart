@@ -8,7 +8,7 @@ class Place {
     required this.name,
     required this.address,
     this.roadAddress,
-    this.phone,
+    this.phone
   });
 
   factory Place.fromJson(Map<String, dynamic> json) => Place(

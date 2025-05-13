@@ -41,7 +41,7 @@ class PostModel {
       content:       data['content']         ?? '',
       recommendMenu: data['recommend_menu']  ?? '',
       tags:          List<String>.from(data['tags']        ?? []),
-      photos:     List<String>.from(data['image_urls'] ?? []),
+      photos:     List<String>.from(data['photos'] ?? []),
       likeCount:     data['like_count']      ?? 0,
       userId:        data['user_id']         ?? '',
       createdAt:     (data['created_at'] as Timestamp).toDate(),

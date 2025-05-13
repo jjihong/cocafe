@@ -1,3 +1,4 @@
+import 'package:cocafe/controllers/authcontroller.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -7,6 +8,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'controllers/feedcontroller.dart';
 import 'controllers/towncontroller.dart';
 import 'src/app.dart';
 // 앱의 시작점 , root를 설정
@@ -19,8 +21,11 @@ void main() async {
   // runApp() 호출 전 Flutter SDK 초기화
   KakaoSdk.init(
     nativeAppKey: dotenv.get('nativeAppKey'),
+    javaScriptAppKey: dotenv.get('appKey'),
   );
   await Firebase.initializeApp();
+  Get.put(AuthController());
+  Get.put(FeedController());
   final townController = Get.put(TownController());
   await townController.loadSelectedTown();
   runApp(const MyApp());

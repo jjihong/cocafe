@@ -58,6 +58,18 @@ class Post extends StatelessWidget {
                         if (result != null) {
                           controller.shopNameController.text = result.name;
                           controller.addressController.text = result.roadAddress ?? result.address;
+
+                          controller.shopNameController.text = result.name;
+                          controller.addressController.text = result.roadAddress ?? result.address;
+
+                          // 📌 address API 호출해서 b_code 얻기
+                          final region = await controller.fetchRegionInfo(result.address);
+                          if (region != null) {
+                            controller.region1.value = region['region_1depth_name'] ?? '';
+                            controller.region2.value = region['region_2depth_name'] ?? '';
+                            controller.region3.value = region['region_3depth_name'] ?? '';
+                            controller.bcode.value = region['b_code'] ?? '';
+                          }
                         }
                       },
                     ),

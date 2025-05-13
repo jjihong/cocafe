@@ -44,6 +44,9 @@ android {
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders = [
+                kakao_scheme: "${project.property("NativeAppKey")}"
+        ]
     }
 
     buildTypes {

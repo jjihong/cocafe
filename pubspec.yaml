@@ -31,6 +31,8 @@ dependencies:
   flutter_image_compress: ^2.4.0
   get_storage: ^2.1.1
   flutter_dotenv: ^5.2.1
+  firebase_auth: ^5.5.3
+  flutter_launcher_icons: ^0.14.3
 
 dev_dependencies:
   flutter_test:
@@ -41,8 +43,13 @@ dev_dependencies:
 
 flutter:
   assets:
+    - asset/
     - asset/json/
     - .env
   uses-material-design: true
 
-
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "asset/app_icon.png" # 아이콘 경로
+  remove_alpha_ios: true

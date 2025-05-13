@@ -1,8 +1,10 @@
+import 'package:cocafe/screens/login.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../controllers/authcontroller.dart';
 import '../screens/home.dart';
 
 class MyApp extends StatelessWidget {
@@ -10,6 +12,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authC = Get.find<AuthController>(); // AuthController 찾기
     return GetMaterialApp(
       theme: ThemeData(
         textTheme: GoogleFonts.doHyeonTextTheme(),
@@ -26,10 +29,16 @@ class MyApp extends StatelessWidget {
           elevation: 8,
         ),
       ),
+      home: Obx(() {
+        return authC.firebaseUser.value != null
+            ? const Home()
+            : const LoginScreen();
+      }),
       debugShowCheckedModeBanner: false,
       title: 'cocafe',
       getPages: [
-        GetPage(name: "/", page: () => Home()),
+        GetPage(name: "/", page: () => LoginScreen()),
+        GetPage(name: '/home', page: () => const Home()), // 수정: 홈 경로 추가
       ],
     );
   }

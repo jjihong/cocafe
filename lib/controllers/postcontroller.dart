@@ -1,10 +1,12 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
-
+import 'package:http/http.dart' as http;
 import '../providers/postprovider.dart';
 import '../screens/feed/index.dart';
 import '../screens/home.dart';
@@ -16,6 +18,11 @@ class PostController extends GetxController {
   final addressController = TextEditingController();
   final contentController = TextEditingController();
   final menuController = TextEditingController();
+
+  final region1 = ''.obs;
+  final region2 = ''.obs;
+  final region3 = ''.obs;
+  final bcode = ''.obs;
 
   final PostProvider postProvider = PostProvider();
   final storage = FirebaseStorage.instance;
@@ -50,11 +57,11 @@ class PostController extends GetxController {
   Future<void> submitPost() async {
     if (isUploading.value) return; // 중복 업로드 방지
 
-    final title     = titleController.text.trim();
-    final shopName  = shopNameController.text.trim();
-    final address   = addressController.text.trim();
-    final content   = contentController.text.trim();
-    final menu      = menuController.text.trim();
+    final title = titleController.text.trim();
+    final shopName = shopNameController.text.trim();
+    final address = addressController.text.trim();
+    final content = contentController.text.trim();
+    final menu = menuController.text.trim();
     final tagList = selectedTags.toList();
 
     // 1) 최소 유효성 검사
@@ -67,13 +74,10 @@ class PostController extends GetxController {
     try {
       const int concurrency = 3;
       for (int i = 0; i < images.length; i += concurrency) {
-        final batch = images
-            .skip(i)
-            .take(concurrency)
-            .map((xfile) async {
+        final batch = images.skip(i).take(concurrency).map((xfile) async {
           final bytes = await File(xfile.path).readAsBytes();
-          final name  = '${DateTime.now().millisecondsSinceEpoch}_${xfile.name}';
-          final snap  = await storage.ref('posts/$name').putData(bytes);
+          final name = '${DateTime.now().millisecondsSinceEpoch}_${xfile.name}';
+          final snap = await storage.ref('posts/$name').putData(bytes);
           return snap.ref.getDownloadURL();
         }).toList();
 
@@ -89,6 +93,10 @@ class PostController extends GetxController {
         recommendMenu: menu.isEmpty ? null : menu,
         tags: tagList,
         imageUrls: imageUrls,
+        region1: region1.value,
+        region2: region2.value,
+        region3: region3.value,
+        bcode: bcode.value,
       );
 
       clearAll();
@@ -120,5 +128,32 @@ class PostController extends GetxController {
     contentController.dispose();
     menuController.dispose();
     super.onClose();
+  }
+
+  Future<Map<String, dynamic>?> fetchRegionInfo(String address) async {
+    if (address.trim().isEmpty) return null;
+
+    final uri = Uri.https(
+      'dapi.kakao.com',
+      '/v2/local/search/address.json',
+      {
+        'query': address,
+        'analyze_type': 'similar', // 유사 주소 허용 (선택)
+      },
+    );
+
+    final resp = await http.get(uri, headers: {
+      'Authorization': '${dotenv.get('KAKAO_REST_API_KEY')}',
+    });
+
+    print('DEBUG: status=${resp.statusCode}, body=${resp.body}'); // ⬅️ 꼭 확인
+
+    if (resp.statusCode == 200) {
+      final jsonBody = jsonDecode(resp.body);
+      final docs = (jsonBody['documents'] as List).cast<Map<String, dynamic>>();
+      return docs.isNotEmpty ? docs.first['address'] : null;
+    }
+
+    return null;
   }
 }

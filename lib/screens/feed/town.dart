@@ -81,7 +81,6 @@ class _TownState extends State<Town> {
                           final townName =
                               "${location['시도']} ${location['시군구']} ${location['읍면동']}"
                                   .trim();
-
                           _townController.saveSelectedTown(townName); // ✅ 저장 호출
                           Get.back();
                         },

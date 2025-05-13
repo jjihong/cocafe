@@ -29,9 +29,16 @@ class PostListItem extends StatelessWidget {
               topLeft: Radius.circular(12),
               topRight: Radius.circular(12),
             ),
-            child: Image.network(
+            child: thumbnailUrl.startsWith('asset/')
+                ? Image.asset(
               thumbnailUrl,
-              width: double.infinity, // ⬅️ 꽉 차게!
+              width: double.infinity,
+              height: 180,
+              fit: BoxFit.cover,
+            )
+                : Image.network(
+              thumbnailUrl,
+              width: double.infinity,
               height: 180,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => Container(
@@ -51,11 +58,11 @@ class PostListItem extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
+                    Text(shopName,
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
-                    Text(shopName,
+                    Text(title,
                         style: TextStyle(color: Colors.grey[600], fontSize: 13)),
                     const SizedBox(height: 12),
                     Row(

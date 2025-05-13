@@ -17,10 +17,9 @@ class _AddressSearchScreenState extends State<AddressSearchScreen> {
   final _results = <Place>[];
   bool _loading = false;
 
-  // 발급받은 REST API 키 (앞에 "KakaoAK " 붙이세요)
   static final String _restApiKey = dotenv.get('KAKAO_REST_API_KEY');
 
-  Future<void> _search() async {
+  Future<void> search() async {
     final q = _searchCtrl.text.trim();
     if (q.isEmpty) return;
     setState(() => _loading = true);
@@ -55,11 +54,11 @@ class _AddressSearchScreenState extends State<AddressSearchScreen> {
                     hintText: '장소명 입력',
                     border: OutlineInputBorder(),
                   ),
-                  onSubmitted: (_) => _search(),
+                  onSubmitted: (_) => search(),
                 ),
               ),
               const SizedBox(width: 8),
-              ElevatedButton(onPressed: _search, child: const Text('검색')),
+              ElevatedButton(onPressed: search, child: const Text('검색')),
             ]),
           ),
           if (_loading) const LinearProgressIndicator(),
@@ -75,7 +74,9 @@ class _AddressSearchScreenState extends State<AddressSearchScreen> {
                         title: Text(p.name),
                         subtitle: Text(p.roadAddress ?? p.address),
                         trailing: p.phone == null ? null : Text(p.phone!),
-                        onTap: () => Get.back(result: p),
+                        onTap: () {
+                          Get.back(result: p);
+                        },
                       );
                     },
                   ),

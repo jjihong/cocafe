@@ -1,3 +1,4 @@
+import 'package:cocafe/controllers/feedcontroller.dart';
 import 'package:cocafe/screens/feed/post.dart';
 import 'package:cocafe/screens/feed/town.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,6 +18,7 @@ class FeedIndex extends StatefulWidget {
 
 class _FeedIndexState extends State<FeedIndex> {
   final TownController _townController = Get.find<TownController>();
+  final FeedController _feedController = Get.find<FeedController>();
 
   @override
   Widget build(BuildContext context) {
@@ -59,19 +61,39 @@ class _FeedIndexState extends State<FeedIndex> {
         // 플로팅 버튼의 배경색
         shape: const CircleBorder(), // 동그라미 모양을 확실히 설정
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-        itemCount: dummyPosts.length,
-        itemBuilder: (context, index) {
-          final post = dummyPosts[index];
-          return PostListItem(
-            thumbnailUrl: post.imageUrl,
-            title: post.title,
-            shopName: post.shopName,
-            likeCount: post.likeCount,
-          );
-        },
-      ),
+      // ▶ body: Firestore 스트림 구독
+      body: Obx(() {
+        final posts = _feedController.posts;
+        return RefreshIndicator(
+          onRefresh: () async {
+            await _feedController.reload(); // 새로고침 시 실행될 메서드
+          },
+          child: posts.isEmpty
+              ? ListView(
+            physics: AlwaysScrollableScrollPhysics(),
+            children: [Center(child: Padding(
+              padding: EdgeInsets.only(top: 100),
+              child: Text('게시글이 없습니다.'),
+            ))],
+          )
+              : ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              final p = posts[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: PostListItem(
+                  thumbnailUrl: p.photos[0],
+                  title: p.title,
+                  shopName: p.shopName,
+                  likeCount: p.likeCount,
+                ),
+              );
+            },
+          ),
+        );
+      }),
     );
   }
 
@@ -107,28 +129,5 @@ class _FeedIndexState extends State<FeedIndex> {
   }
 }
 
-// 임시용 더미 데이터
-class PostModel {
-  final String title;
-  final String shopName;
-  final String imageUrl;
-  final int likeCount;
 
-  PostModel({
-    required this.title,
-    required this.shopName,
-    required this.imageUrl,
-    required this.likeCount,
-  });
-}
-
-final List<PostModel> dummyPosts = [
-  PostModel(
-    title: '주5일~4시간(주말 포함) 21312짧게 근무!!',
-    shopName: '인창동 · 알바',
-    imageUrl: 'https://i.namu.wiki/i/MIcM4D9MLjTDkRanLrqMjs_7HS7HuaDB7o2Wq_Dz0Cih4ARtmyrfll5zFGqb56tPFEDo0fuSVsIVGGk9A3xOROteYKXUlzeUtrYa6jyGl7saElt-O8dE4QCNukIqQBsQNq44dsqek2EcviPQ-fNVEw.webp',
-    likeCount: 18,
-  ),
-  // 추가 더미...
-];
 
