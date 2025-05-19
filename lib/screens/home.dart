@@ -1,4 +1,5 @@
 import 'package:cocafe/screens/map/index.dart';
+import 'package:cocafe/screens/my/mypage.dart';
 import 'package:flutter/material.dart';
 
 import 'feed/index.dart';
@@ -13,7 +14,7 @@ final List<BottomNavigationBarItem> myTabs = <BottomNavigationBarItem>[
 final List<Widget> myTabItems = [
   FeedIndex(),
   MapIndex(),
-  Center(child: Text('마이')),
+  MyPageScreen()
 ];
 
 class Home extends StatefulWidget {

@@ -8,6 +8,7 @@ import 'package:get/get_core/src/get_main.dart';
 
 import '../../controllers/towncontroller.dart';
 import '../../widgets/listitems/post_listitem.dart';
+import 'detail.dart';
 
 class FeedIndex extends StatefulWidget {
   const FeedIndex({super.key});
@@ -80,14 +81,19 @@ class _FeedIndexState extends State<FeedIndex> {
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             itemCount: posts.length,
             itemBuilder: (context, index) {
-              final p = posts[index];
+              final post = posts[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
-                child: PostListItem(
-                  thumbnailUrl: p.photos[0],
-                  title: p.title,
-                  shopName: p.shopName,
-                  likeCount: p.likeCount,
+                child: GestureDetector(
+                  onTap: () {
+                    Get.to(() => PostDetail(postId: post.id));
+                  },
+                  child: PostListItem(
+                    thumbnailUrl: post.photos[0],
+                    title: post.title,
+                    shopName: post.shopName,
+                    likeCount: post.likeCount,
+                  ),
                 ),
               );
             },

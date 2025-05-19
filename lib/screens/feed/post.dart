@@ -133,6 +133,7 @@ class Post extends StatelessWidget {
               ),
               bottomNavigationBar: const SubmitButton(),
             ),
+            const SizedBox(height: 8),
             if (controller.isUploading.value)
               Container(
                 color: Colors.black.withOpacity(0.3), // 🔹 반투명 배경
