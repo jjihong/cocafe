@@ -18,6 +18,7 @@ class _TownState extends State<Town> {
   void initState() {
     super.initState();
     _loadData();
+
   }
 
   void _loadData() async {
@@ -78,10 +79,7 @@ class _TownState extends State<Town> {
                               .trim(),
                         ),
                         onTap: () {
-                          final townName =
-                              "${location['시도']} ${location['시군구']} ${location['읍면동']}"
-                                  .trim();
-                          _townController.saveSelectedTown(townName); // ✅ 저장 호출
+                          _townController.saveSelectedTown(location); // ✅ 위치 정보 전체 전달
                           Get.back();
                         },
                       );

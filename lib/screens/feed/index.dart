@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../controllers/towncontroller.dart';
 import '../../widgets/listitems/post_listitem.dart';
@@ -109,7 +110,6 @@ class _FeedIndexState extends State<FeedIndex> {
     final Offset position = renderBox.localToGlobal(Offset.zero);
     final double dx = position.dx + renderBox.size.width; // 타이틀 오른쪽 끝의 x 좌표
     final double dy = position.dy + renderBox.size.height; // 타이틀 아래의 y 좌표
-
     await showMenu(
       context: context,
       position: RelativeRect.fromLTRB(dx, dy, dx, dy),

@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http; // ✅ 추가
+import 'package:http/http.dart' as http;
+
+import 'feedcontroller.dart'; // ✅ 추가
 
 
 class TownController extends GetxController {
@@ -43,18 +46,22 @@ class TownController extends GetxController {
   }
 
 
-  // void selectTown(Map<String, dynamic> location) {
-  //   selectedTown.value =
-  //       "${location['시도']} ${location['시군구']} ${location['읍면동']}".trim();
-  // }
+  Future<void> saveSelectedTown(Map<String, dynamic> location) async {
+    final townName =
+    "${location['시도']} ${location['시군구']} ${location['읍면동']}".trim();
+    final bcode = location['코드'].toString(); // ✅ 코드 가져오기
 
-  // 앱 껏다키면 그 설정을 유지
-  Future<void> saveSelectedTown(String townName) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedTown', townName);
+    await prefs.setString('selectedBcode', bcode); // ✅ bcode 저장
     selectedTown.value = townName;
-    print('✅ 저장 완료: $townName'); // 디버깅용 로그 추가
+
+    print('✅ 동네 저장 완료: $townName / $bcode');
+
+    final feedController = Get.find<FeedController>();
+    await feedController.reload();
   }
+
 
   Future<void> loadSelectedTown() async {
     final prefs = await SharedPreferences.getInstance();
@@ -73,13 +80,14 @@ class TownController extends GetxController {
       );
       print('📍 현재 위치: ${position.latitude}, ${position.longitude}');
 
-      // ✅ Kakao REST API로 주소 정보 요청
-      final townName = await fetchAddressFromLatLng(position.latitude, position.longitude);
+      final locationData = await fetchAddressFromLatLng(position.latitude, position.longitude);
 
-      if (townName != null) {
-        await saveSelectedTown(townName);
+      if (locationData != null) {
+        final townName = locationData['townName']!;
+        final bcode = locationData['bcode']!;
+        await _saveTownAndBcode(townName, bcode); // ✅ 따로 저장 함수로 분리해도 좋음
         Get.back();
-        print('📍 현재 위치 동네 설정 완료: $townName');
+        print('📍 현재 위치 동네 설정 완료: $townName / $bcode');
       } else {
         Get.snackbar('알림', '현재 위치의 동네를 찾을 수 없습니다.');
       }
@@ -89,17 +97,17 @@ class TownController extends GetxController {
     }
   }
 
-  Future<String?> fetchAddressFromLatLng(double lat, double lng) async {
+
+  Future<Map<String, String>?> fetchAddressFromLatLng(double lat, double lng) async {
     final url = Uri.parse('https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=$lng&y=$lat');
 
     final response = await http.get(
       url,
       headers: {
-        'Authorization': 'KakaoAK 7f91f980c97d305201065841b4be0025',
-        'KA': 'sdk/flutter os/android lang/ko-KR device/emulator', // ✅ 형식 변경
+        'Authorization': dotenv.get('KAKAO_REST_API_KEY'),
+        'KA': 'sdk/flutter os/android lang/ko-KR device/emulator',
       },
     );
-
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -110,12 +118,31 @@ class TownController extends GetxController {
         final sido = doc['region_1depth_name'];
         final sigungu = doc['region_2depth_name'];
         final eupmyeondong = doc['region_3depth_name'];
-        print('🧭 카카오 주소: $sido $sigungu $eupmyeondong');
-        return '$sido $sigungu $eupmyeondong';
+        final bcode = doc['code']; // ✅ bcode 추출
+
+        final townName = "$sido $sigungu $eupmyeondong".trim();
+
+        print('🧭 카카오 주소: $townName');
+        print('🏷️ 법정동 코드(bcode): $bcode');
+
+        return {
+          'townName': townName,
+          'bcode': bcode,
+        }; // ✅ Map 리턴
       }
     } else {
       print('❌ 주소 조회 실패: ${response.body}');
     }
     return null;
   }
+
+  Future<void> _saveTownAndBcode(String townName, String bcode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedTown', townName);
+    await prefs.setString('selectedBcode', bcode);
+    selectedTown.value = townName;
+    final feedController = Get.find<FeedController>();
+    await feedController.reload();
+  }
+
 }

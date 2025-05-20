@@ -3,6 +3,7 @@
 // lib/controllers/feed_controller.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/postmodel.dart';
 import '../screens/feed/post.dart';  // PostModel import
 import 'dart:math';
@@ -25,8 +26,18 @@ class FeedController extends GetxController {
   }
 
   Future<void> loadPosts() async {
+    // 선택 동네 bcode
+    final prefs = await SharedPreferences.getInstance();
+    final selectedBcode = prefs.getString('selectedBcode');
+
+    if (selectedBcode == null || selectedBcode.isEmpty) {
+      posts.clear();
+      return;
+    }
+
     final snap = await FirebaseFirestore.instance
         .collection('posts')
+        .where('bcode', isEqualTo: selectedBcode)
         .orderBy('created_at', descending: true)
         .get();
 

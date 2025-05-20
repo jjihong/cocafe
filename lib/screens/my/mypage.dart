@@ -20,7 +20,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
   Map<String, dynamic>? userData;
   bool isLoading = true;
   final AuthController authController =
-  Get.find<AuthController>(); // ✅ 기존 put → find
+  Get.find<AuthController>();
 
   @override
   void initState() {

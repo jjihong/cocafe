@@ -8,6 +8,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'controllers/feedcontroller.dart';
 import 'controllers/towncontroller.dart';
 import 'src/app.dart';
