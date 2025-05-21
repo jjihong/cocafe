@@ -3,6 +3,8 @@ import 'package:flutter_naver_map/flutter_naver_map.dart';
 import '../../controllers/mapcontroller.dart';
 import '../../widgets/buttons/categorybutton.dart';
 
+
+
 class MapIndex extends StatefulWidget {
   const MapIndex({super.key});
 
@@ -11,6 +13,7 @@ class MapIndex extends StatefulWidget {
 }
 
 class _MapIndexState extends State<MapIndex> {
+
   final mapController = MapController();
   List<String> selectedCategories = [];
   final List<NMarker> markers = [];
@@ -38,7 +41,10 @@ class _MapIndexState extends State<MapIndex> {
             ),
             onMapReady: (controller) async {
               mapController.setController(controller);
-
+              /// ✅ 콜백 등록
+              mapController.onMarkerTapCallback = (quote) {
+                showMotivationalSnackBar(context, quote);
+              };
               /// ✅ 지도 로딩 완료 시 내 위치로 이동 + 마커 표시
               await mapController.moveToCurrentLocation();
             },
@@ -102,4 +108,23 @@ class _MapIndexState extends State<MapIndex> {
       ),
     );
   }
+
+  void showMotivationalSnackBar(BuildContext context, String quote) {
+
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          quote,
+          style: const TextStyle(fontSize: 16, fontFamily: 'monospace'),
+          textAlign: TextAlign.left,
+        ),
+        backgroundColor: Colors.black87,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
 }
