@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import '../../controllers/mapcontroller.dart';
 import '../../widgets/buttons/categorybutton.dart';
 
@@ -13,16 +13,7 @@ class MapIndex extends StatefulWidget {
 class _MapIndexState extends State<MapIndex> {
   final mapController = MapController();
   List<String> selectedCategories = [];
-  Set<Marker> markers = {}; // 마커를 담는 리스트
-
-  @override
-  void initState() {
-    super.initState();
-    // 위치 권한 요청을 먼저 함
-    Future.delayed(Duration.zero, () async {
-      await mapController.moveToCurrentLocation(); // 위치 먼저 가져오기
-    });
-  }
+  final List<NMarker> markers = [];
 
   void toggleCategory(String category) {
     setState(() {
@@ -40,32 +31,23 @@ class _MapIndexState extends State<MapIndex> {
       appBar: AppBar(title: const Text('코딩 추천 장소')),
       body: Stack(
         children: [
-          KakaoMap(
-            onMapCreated: ((controller) async {
+          NaverMap(
+            options: const NaverMapViewOptions(
+              locationButtonEnable: false, // 기본 위치버튼 제거
+              indoorEnable: false,
+            ),
+            onMapReady: (controller) async {
               mapController.setController(controller);
 
-              markers.add(Marker(
-                markerId: UniqueKey().toString(),
-                latLng: await mapController.getCenter(),
-              ));
-
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                await mapController.moveToCurrentLocation();
-              });
-            }),
-            markers: markers.toList(), // 마커 표시
-            center: LatLng(37.566317, 126.977829),
-            onMapTap: (latLng) {
-              debugPrint('[DEBUG] 지도 탭: ${latLng.toString()}');
+              /// ✅ 지도 로딩 완료 시 내 위치로 이동 + 마커 표시
+              await mapController.moveToCurrentLocation();
             },
           ),
-
           /// 📍 현재 위치로 이동 버튼
           Positioned(
             bottom: 16,
             left: 16,
             child: FloatingActionButton(
-              heroTag: 'current_location_btn',
               onPressed: () async {
                 await mapController.moveToCurrentLocation();
               },
@@ -74,7 +56,7 @@ class _MapIndexState extends State<MapIndex> {
             ),
           ),
 
-          // 상단 메뉴바
+          /// 상단 카테고리 메뉴
           Positioned(
             top: 10,
             left: 0,
@@ -89,40 +71,32 @@ class _MapIndexState extends State<MapIndex> {
                     icon: Icons.electric_bolt,
                     title: '코드 많은',
                     selected: selectedCategories.contains('코드 많은'),
-                    onTap: () {
-                      toggleCategory('코드 많은');
-                    },
+                    onTap: () => toggleCategory('코드 많은'),
                   ),
                   const SizedBox(width: 8),
                   CategoryButton(
-                      icon: Icons.looks_two_rounded,
-                      title: '2층 이상',
-                      selected: selectedCategories.contains('2층 이상'),
-                      onTap: () {
-                        toggleCategory('2층 이상');
-                      },
+                    icon: Icons.looks_two_rounded,
+                    title: '2층 이상',
+                    selected: selectedCategories.contains('2층 이상'),
+                    onTap: () => toggleCategory('2층 이상'),
                   ),
                   const SizedBox(width: 8),
                   CategoryButton(
                     icon: Icons.volume_mute,
                     title: '조용한',
                     selected: selectedCategories.contains('조용한'),
-                    onTap: () {
-                      toggleCategory('조용한');
-                    },
+                    onTap: () => toggleCategory('조용한'),
                   ),
                   const SizedBox(width: 8),
                   CategoryButton(
                     icon: Icons.book,
                     title: '스터디룸',
                     selected: selectedCategories.contains('스터디룸'),
-                    onTap: () {
-                      toggleCategory('스터디룸');
-                    },
+                    onTap: () => toggleCategory('스터디룸'),
                   ),
                 ],
-              ), // ListView
-            ), // Container (카테고리 버튼)
+              ),
+            ),
           ),
         ],
       ),

@@ -1,16 +1,16 @@
-import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 
 class MapController {
-  KakaoMapController? _controller;
+  NaverMapController? _controller;
 
-  void setController(KakaoMapController controller) {
+  void setController(NaverMapController controller) {
     _controller = controller;
   }
 
   Future<void> moveToCurrentLocation() async {
     if (_controller == null) {
-      print("🛑 KakaoMapController가 아직 초기화되지 않았습니다.");
+      print("🛑 NaverMapController가 아직 초기화되지 않았습니다.");
       return;
     }
 
@@ -20,48 +20,47 @@ class MapController {
       return;
     }
 
-
     try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
+        locationSettings:
+            const LocationSettings(accuracy: LocationAccuracy.high),
       );
 
-      final double lat = position.latitude;
-      final double lng = position.longitude;
-      print("📍 현재 위치: $lat, $lng");
+      final latLng = NLatLng(position.latitude, position.longitude);
 
-      await _controller!.setCenter(LatLng(lat, lng));
+      // 📌 카메라 이동
+      await _controller!.updateCamera(
+        NCameraUpdate.fromCameraPosition(
+            NCameraPosition(target: latLng, zoom: 15)),
+      );
+
+      // 📌 기존 마커 제거 (중복 방지)
+      await _controller!.clearOverlays(type: NOverlayType.marker);
+
+      // 📌 마커 생성
+      final marker = NMarker(id: 'current_location', position: latLng);
+
+      // ✅ 이미지 설정
+      marker.setIcon(
+          NOverlayImage.fromAssetImage('asset/current_place.png'));
+
+      // 📌 지도에 마커 추가
+      await _controller!.addOverlay(marker);
     } catch (e) {
-      print("🚨 현재 위치 이동 중 예외 발생: $e");
+      print("🚨 현재 위치 이동/마커 표시 중 예외 발생: $e");
     }
   }
 
   Future<bool> _handleLocationPermission() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      print("🛑 위치 서비스가 비활성화되어 있어요.");
-      return false;
-    }
+    if (!serviceEnabled) return false;
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
 
-    if (permission == LocationPermission.deniedForever) {
-      print("🛑 위치 권한이 영구적으로 거부됨.");
-      return false;
-    }
-
-    return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
-  }
-
-  Future<LatLng> getCenter() async {
-    if (_controller == null) {
-      throw Exception('KakaoMapController is not initialized');
-    }
-    return await _controller!.getCenter();
+    return permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse;
   }
 }

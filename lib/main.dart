@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cocafe/controllers/authcontroller.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,25 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AuthRepository.initialize(appKey: dotenv.get('appKey'));
   // runApp() 호출 전 Flutter SDK 초기화
+
+  bool isAuthSuccess = true;
+
+  final naverMap = FlutterNaverMap();
+  await naverMap.init(
+    clientId: dotenv.get('naverMapClientId'),
+    onAuthFailed: (ex) {
+      isAuthSuccess = false;
+      log("❌ 네이버맵 인증 실패: $ex");
+    },
+  );
+
+  if (isAuthSuccess) {
+    log("✅ 네이버맵 인증 성공!");
+  } else {
+    log("❌ 인증 실패. 지도를 사용할 수 없습니다.");
+  }
+
+
   KakaoSdk.init(
     nativeAppKey: dotenv.get('nativeAppKey'),
     javaScriptAppKey: dotenv.get('appKey'),
