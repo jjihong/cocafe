@@ -206,6 +206,11 @@ class PostController extends GetxController {
     }
   }
 
+  Future<bool> hasDraft() async {
+    final draft = await postProvider.loadDraft();
+    return draft != null;
+  }
+
 
   Future<void> loadDraftIfExists() async {
     final data = await postProvider.loadDraft();

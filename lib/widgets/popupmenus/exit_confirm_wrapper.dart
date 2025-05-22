@@ -1,6 +1,6 @@
-import 'package:cocafe/widgets/custom_save_dialog.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import '../custom_save_dialog.dart';
 
 class ExitConfirmWrapper extends StatefulWidget {
   final Widget child;
@@ -26,8 +26,18 @@ class _ExitConfirmWrapperState extends State<ExitConfirmWrapper> {
       context: context,
       barrierDismissible: false,
       builder: (context) => CustomSaveDialog(
-        onSave: () => widget.onSave?.call(),
-        onDiscard: () => widget.onDiscard?.call(),
+        title: '작성 중인 판매 글을 저장할까요?',
+        description: '지금 나가면 작성한 내용이 사라져요.',
+        saveButtonText: '저장하기',
+        discardButtonText: '저장 안 함',
+        onSave: () {
+          widget.onSave?.call();
+          Navigator.of(context).pop(true);
+        },
+        onDiscard: () {
+          widget.onDiscard?.call();
+          Navigator.of(context).pop(false);
+        },
       ),
     );
 

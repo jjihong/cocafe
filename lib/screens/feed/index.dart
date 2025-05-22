@@ -7,8 +7,10 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../controllers/postcontroller.dart';
 import '../../controllers/towncontroller.dart';
 import '../../widgets/listitems/post_listitem.dart';
+import '../../widgets/popupmenus/resume_draft_dialog.dart';
 import 'detail.dart';
 
 class FeedIndex extends StatefulWidget {
@@ -51,8 +53,21 @@ class _FeedIndexState extends State<FeedIndex> {
         // ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Get.to(() => Post());
+        onPressed: () async {
+          final controller = Get.put(PostController());
+          final hasDraft = await controller.hasDraft();
+
+          if (hasDraft) {
+            await ResumeDraftDialog.show(
+              context: context,
+              onDiscardDraft: () async {
+                await controller.postProvider.deleteDraft();
+                controller.clearAll();
+              },
+            );
+          } else {
+            Get.to(() => Post());
+          }
         },
         child: const Icon(
           Icons.add,
