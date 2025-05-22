@@ -58,6 +58,7 @@ class _FeedIndexState extends State<FeedIndex> {
           Icons.add,
           color: Colors.white,
         ),
+        heroTag: 'feed_fab',
         // 플로팅 버튼 아이콘 (여기서는 '+' 아이콘)
         backgroundColor: Colors.black,
         // 플로팅 버튼의 배경색

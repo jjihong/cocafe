@@ -93,6 +93,34 @@ class _PostDetailState extends State<PostDetail> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      FutureBuilder<DocumentSnapshot>(
+                        future: FirebaseFirestore.instance.collection('users').doc(post['user_id']).get(),
+                        builder: (context, userSnapshot) {
+                          if (!userSnapshot.hasData) {
+                            return const SizedBox.shrink();
+                          }
+
+                          final user = userSnapshot.data!.data() as Map<String, dynamic>;
+
+                          return Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 20,
+                                backgroundImage: user['profile_image'] != null
+                                    ? NetworkImage(user['profile_image'])
+                                    : null,
+                                backgroundColor: Colors.grey[300],
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                user['nickname'] ?? '알 수 없음',
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
                       Text(
                         post['title'] ?? '',
                         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),

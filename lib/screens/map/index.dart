@@ -59,6 +59,7 @@ class _MapIndexState extends State<MapIndex> {
               },
               backgroundColor: Colors.white,
               child: const Icon(Icons.my_location),
+              heroTag: 'map_fab',
             ),
           ),
 

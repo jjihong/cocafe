@@ -38,7 +38,13 @@ class PostController extends GetxController {
     {'label': '스터디룸', 'icon': Icons.book},
   ];
 
-  // 임시저장
+
+  @override
+  void onInit() {
+    super.onInit();
+    clearAll(); // 초기화 먼저 하고
+    loadDraftIfExists(); // 임시저장 불러오기
+  }
 
   // 이미지 선택
   Future<void> pickImages() async {
@@ -98,7 +104,7 @@ class PostController extends GetxController {
         region3: region3.value,
         bcode: bcode.value,
       );
-
+      await postProvider.deleteDraft();
       clearAll();
       isUploading.value = false; // ✨ 항상 false로 복귀
       Get.snackbar('완료', '게시글이 성공적으로 업로드되었습니다.');
@@ -156,4 +162,70 @@ class PostController extends GetxController {
 
     return null;
   }
+
+  Future<void> saveAsDraft() async {
+    final title = titleController.text.trim();
+    final shopName = shopNameController.text.trim();
+    final address = addressController.text.trim();
+    final content = contentController.text.trim();
+    final menu = menuController.text.trim();
+    final tagList = selectedTags.toList();
+    final imagePaths = images.map((x) => x.path).toList(); // ✅ path만 저장
+
+    final isEmptyAll = title.isEmpty &&
+        shopName.isEmpty &&
+        address.isEmpty &&
+        content.isEmpty &&
+        menu.isEmpty &&
+        tagList.isEmpty &&
+        imagePaths.isEmpty;
+
+    if (isEmptyAll) {
+      Get.snackbar('임시저장 불가', '내용이 없습니다.');
+      return;
+    }
+
+    try {
+      await postProvider.saveDraft(
+        title: title,
+        shopName: shopName,
+        address: address,
+        content: content,
+        recommendMenu: menu,
+        tags: tagList,
+        imagePaths: imagePaths,
+        region1: region1.value,
+        region2: region2.value,
+        region3: region3.value,
+        bcode: bcode.value,
+      );
+
+      Get.snackbar('임시저장 완료', '작성 중인 글이 저장되었습니다.');
+    } catch (e) {
+      Get.snackbar('저장 실패', e.toString());
+    }
+  }
+
+
+  Future<void> loadDraftIfExists() async {
+    final data = await postProvider.loadDraft();
+    if (data == null) return;
+
+    titleController.text = data['title'] ?? '';
+    shopNameController.text = data['shop_name'] ?? '';
+    addressController.text = data['address'] ?? '';
+    contentController.text = data['content'] ?? '';
+    menuController.text = data['recommend_menu'] ?? '';
+    selectedTags.assignAll(List<String>.from(data['tags'] ?? []));
+
+    region1.value = data['region1'] ?? '';
+    region2.value = data['region2'] ?? '';
+    region3.value = data['region3'] ?? '';
+    bcode.value = data['bcode'] ?? '';
+
+    // 이미지 경로 복원
+    final imagePaths = List<String>.from(data['image_paths'] ?? []);
+    images.assignAll(imagePaths.map((p) => XFile(p)).toList());
+  }
+
 }

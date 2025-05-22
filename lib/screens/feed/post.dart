@@ -18,6 +18,16 @@ class Post extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ExitConfirmWrapper(
+      onSave: () => controller.saveAsDraft(),
+      onDiscard: () {
+        controller.postProvider.deleteDraft();
+        controller.clearAll();
+      },
+      // isModified: () {
+      //   return controller.titleController.text.isNotEmpty ||
+      //       controller.contentController.text.isNotEmpty ||
+      //       controller.images.isNotEmpty;
+      // },
       child: Obx(
         () => Stack(
           children: [
@@ -29,7 +39,7 @@ class Post extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 8.0),
                     child: TextButton(
                       onPressed: () {
-                        debugPrint('📦 수동으로 임시저장');
+                        controller.saveAsDraft();
                       },
                       child: const Text(
                         '임시저장',
@@ -54,20 +64,27 @@ class Post extends StatelessWidget {
                       label: '가게 이름',
                       readOnly: true, // 직접 타이핑 못하게 막아
                       onTap: () async {
-                        final Place? result = await Get.to(() => const AddressSearchScreen());
+                        final Place? result =
+                            await Get.to(() => const AddressSearchScreen());
                         if (result != null) {
                           controller.shopNameController.text = result.name;
-                          controller.addressController.text = result.roadAddress ?? result.address;
+                          controller.addressController.text =
+                              result.roadAddress ?? result.address;
 
                           controller.shopNameController.text = result.name;
-                          controller.addressController.text = result.roadAddress ?? result.address;
+                          controller.addressController.text =
+                              result.roadAddress ?? result.address;
 
                           // 📌 address API 호출해서 b_code 얻기
-                          final region = await controller.fetchRegionInfo(result.address);
+                          final region =
+                              await controller.fetchRegionInfo(result.address);
                           if (region != null) {
-                            controller.region1.value = region['region_1depth_name'] ?? '';
-                            controller.region2.value = region['region_2depth_name'] ?? '';
-                            controller.region3.value = region['region_3depth_name'] ?? '';
+                            controller.region1.value =
+                                region['region_1depth_name'] ?? '';
+                            controller.region2.value =
+                                region['region_2depth_name'] ?? '';
+                            controller.region3.value =
+                                region['region_3depth_name'] ?? '';
                             controller.bcode.value = region['b_code'] ?? '';
                           }
                         }
@@ -133,7 +150,7 @@ class Post extends StatelessWidget {
               ),
               bottomNavigationBar: const SubmitButton(),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             if (controller.isUploading.value)
               Container(
                 color: Colors.black.withOpacity(0.3), // 🔹 반투명 배경
@@ -142,8 +159,7 @@ class Post extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                       SizedBox(height: 16),
                       Text(
