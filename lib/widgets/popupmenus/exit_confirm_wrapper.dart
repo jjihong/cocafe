@@ -26,7 +26,7 @@ class _ExitConfirmWrapperState extends State<ExitConfirmWrapper> {
       context: context,
       barrierDismissible: false,
       builder: (context) => CustomSaveDialog(
-        title: '작성 중인 판매 글을 저장할까요?',
+        title: '작성 중인 글을 저장할까요?',
         description: '지금 나가면 작성한 내용이 사라져요.',
         saveButtonText: '저장하기',
         discardButtonText: '저장 안 함',
