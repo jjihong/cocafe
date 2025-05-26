@@ -1,10 +1,16 @@
+// post_detail.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../controllers/detailcontroller.dart';
+import '../../widgets/Imageviewer.dart';
+import '../my/mypost.dart';
 
 class PostDetail extends StatefulWidget {
   final String postId;
+
   const PostDetail({Key? key, required this.postId}) : super(key: key);
 
   @override
@@ -12,27 +18,40 @@ class PostDetail extends StatefulWidget {
 }
 
 class _PostDetailState extends State<PostDetail> {
-  final PageController _pageController = PageController(); // ✅ 페이지 추적 컨트롤러
-  int _currentPage = 0; // ✅ 현재 페이지 인덱스
+  final PageController _pageController = PageController();
+  final DetailController detailController = Get.put(DetailController());
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      detailController.fetchPost(widget.postId); // ✅ fetchPost는 build 이후 실행
+    });
+  } // initState 끝
 
   @override
   void dispose() {
-    _pageController.dispose(); // ✅ 메모리 해제
+    _pageController.dispose();
     super.dispose();
-  }
+  } // dispose 끝
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance.collection('posts').doc(widget.postId).get(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+      body: GetBuilder<DetailController>( // ✅ Obx 제거, GetBuilder로 교체
+        builder: (controller) {
+          if (controller.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final post = snapshot.data!.data() as Map<String, dynamic>;
-          final List<dynamic> photos = post['photos'] ?? [];
+          final post = controller.post;
+          final user = controller.user;
+          final photos = post?['photos'] ?? [];
+
+          if (post == null) {
+            return const Center(child: Text('게시글을 불러올 수 없습니다.'));
+          }
 
           return CustomScrollView(
             slivers: [
@@ -42,11 +61,8 @@ class _PostDetailState extends State<PostDetail> {
                 backgroundColor: Colors.white,
                 elevation: 1,
                 centerTitle: true,
-                title: Text(
-                  post['shop_name'] ?? '',
-                  style: const TextStyle(color: Colors.white),
-                ),
-                foregroundColor: Colors.black,
+                title: const Text(''),
+                foregroundColor: Colors.white,
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(
                     alignment: Alignment.bottomCenter,
@@ -55,15 +71,27 @@ class _PostDetailState extends State<PostDetail> {
                         controller: _pageController,
                         itemCount: photos.length,
                         onPageChanged: (index) {
-                          setState(() {
-                            _currentPage = index;
-                          }); // ✅ 페이지 바뀌면 상태 갱신
+                          _currentPage = index;
+                          controller.update(); // ✅ 페이지 갱신
                         },
                         itemBuilder: (context, index) {
-                          return Image.network(
-                            photos[index],
-                            fit: BoxFit.cover,
-                            width: double.infinity,
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ImageViewer(
+                                    photos: List<String>.from(photos),
+                                    initialIndex: index,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Image.network(
+                              photos[index],
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
                           );
                         },
                       ),
@@ -85,50 +113,91 @@ class _PostDetailState extends State<PostDetail> {
                   ),
                 ),
               ),
-
-              // ✅ 본문 영역
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      FutureBuilder<DocumentSnapshot>(
-                        future: FirebaseFirestore.instance.collection('users').doc(post['user_id']).get(),
-                        builder: (context, userSnapshot) {
-                          if (!userSnapshot.hasData) {
-                            return const SizedBox.shrink();
-                          }
+                      if (user != null) ...[
+                        GestureDetector(
+                          onTap: () {
+                            final uid = user['uid'];
+                            final name = user['name'] ?? '사용자';
 
-                          final user = userSnapshot.data!.data() as Map<String, dynamic>;
-
-                          return Row(
+                            if (uid != null) {
+                              Get.to(() => MyPostsScreen(uid: uid, userName: name));
+                            } else {
+                              print('uid 없음');
+                            }
+                          },
+                          child: Row(
                             children: [
                               CircleAvatar(
                                 radius: 20,
-                                backgroundImage: user['profile_image'] != null
-                                    ? NetworkImage(user['profile_image'])
-                                    : null,
+                                backgroundImage: NetworkImage(
+                                  user['profile_img'] ?? '',
+                                ),
                                 backgroundColor: Colors.grey[300],
                               ),
                               const SizedBox(width: 12),
                               Text(
-                                user['nickname'] ?? '알 수 없음',
+                                user['name'] ?? '알 수 없음',
                                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                               ),
                             ],
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 20),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
                       Text(
                         post['title'] ?? '',
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        post['address'] ?? '',
-                        style: TextStyle(color: Colors.grey[600]),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    post['shop_name'] ?? '',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    post['address'] ?? '',
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () async {
+                                final String query = Uri.encodeComponent(post['shop_name'] ?? post['address'] ?? '');
+                                final Uri url = Uri.parse('https://map.naver.com/v5/search/$query');
+
+                                if (await canLaunchUrl(url)) {
+                                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                                } else {
+                                  print('네이버 지도 열기 실패');
+                                }
+                              },
+                              child: Image.asset(
+                                'asset/gotomap.png',
+                                width: 56,
+                                height: 56,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -138,11 +207,9 @@ class _PostDetailState extends State<PostDetail> {
                       const SizedBox(height: 16),
                       Text("추천메뉴: ${post['recommend_menu'] ?? '없음'}"),
                       const SizedBox(height: 16),
-
-                      // ✅ 좋아요 아이콘 + 수
                       Row(
                         children: [
-                          Icon(Icons.favorite_border, color: Colors.red),
+                          const Icon(Icons.favorite_border, color: Colors.red),
                           const SizedBox(width: 8),
                           Text(
                             (post['like_count'] ?? 0).toString(),

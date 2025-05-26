@@ -1,20 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../controllers/authcontroller.dart';
 import '../../controllers/mypostscontroller.dart';
 import '../../widgets/listitems/post_listitem.dart';
 import '../feed/detail.dart';
 
-class MyPostsScreen extends StatelessWidget {
-  const MyPostsScreen({super.key});
+class MyPostsScreen extends StatefulWidget {
+  final String uid;
+  final String? userName;
+
+  const MyPostsScreen({super.key, required this.uid, this.userName});
+
+  @override
+  State<MyPostsScreen> createState() => _MyPostsScreenState();
+}
+
+class _MyPostsScreenState extends State<MyPostsScreen> {
+  late final MyPostsController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(MyPostsController()); // ✅ 컨트롤러 초기화
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.fetchPosts(widget.uid); // ✅ uid 기준으로 글 가져오기
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    Get.put(MyPostsController());
+    final myUid = Get.find<AuthController>().uid;
+    final isMyPost = widget.uid == myUid;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('내가 쓴 글'),
+        title: Text(
+          isMyPost ? '내가 쓴 글' : '${widget.userName ?? '사용자'} 님의 글',
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,

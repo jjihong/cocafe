@@ -19,8 +19,7 @@ class MyPageScreen extends StatefulWidget {
 class _MyPageScreenState extends State<MyPageScreen> {
   Map<String, dynamic>? userData;
   bool isLoading = true;
-  final AuthController authController =
-  Get.find<AuthController>();
+  final AuthController authController = Get.find<AuthController>();
 
   @override
   void initState() {
@@ -78,10 +77,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       OutlinedButton(
                         onPressed: () {
                           Get.to(() => ProfileEditScreen(
-                            currentName: userData?['name'],
-                            currentImageUrl: userData?['profile_img'],
-                          ))
-                              ?.then((result) {
+                                currentName: userData?['name'],
+                                currentImageUrl: userData?['profile_img'],
+                              ))?.then((result) {
                             if (result == true) {
                               fetchUserProfile(); // ✅ 수정 후 다시 로드
                             }
@@ -98,7 +96,11 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   leading: Icon(Icons.article_outlined),
                   title: Text('내가 쓴 글'),
                   onTap: () {
-                    Get.to(MyPostsScreen());
+                    final uid = FirebaseAuth.instance.currentUser?.uid;
+                    final name = userData?['name'] ?? '나';
+                    if (uid != null) {
+                      Get.to(() => MyPostsScreen(uid: uid, userName: name));
+                    }
                   },
                 ),
                 ListTile(
