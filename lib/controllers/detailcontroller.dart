@@ -25,7 +25,7 @@ class DetailController extends GetxController {
         .doc(post?['user_id'])
         .get();
     user = Map<String, dynamic>.from(userSnap.data() ?? {});
-    user!['uid'] = userSnap.id; // ✅ 명시적으로 넣기
+    user!['uid'] = userSnap.id;
 
     isLoading = false;
     update(); // 상태 갱신
