@@ -23,6 +23,8 @@ class PostController extends GetxController {
   final region2 = ''.obs;
   final region3 = ''.obs;
   final bcode = ''.obs;
+  final lat = ''.obs;
+  final lng = ''.obs;
 
   final PostProvider postProvider = PostProvider();
   final storage = FirebaseStorage.instance;
@@ -103,6 +105,9 @@ class PostController extends GetxController {
         region2: region2.value,
         region3: region3.value,
         bcode: bcode.value,
+        lat : lat.value,
+        lng : lng.value,
+
       );
       await postProvider.deleteDraft();
       clearAll();
@@ -198,6 +203,8 @@ class PostController extends GetxController {
         region2: region2.value,
         region3: region3.value,
         bcode: bcode.value,
+        lat: lat.value,
+        lng: lng.value,
       );
 
       Get.snackbar('임시저장 완료', '작성 중인 글이 저장되었습니다.');
@@ -227,6 +234,8 @@ class PostController extends GetxController {
     region2.value = data['region2'] ?? '';
     region3.value = data['region3'] ?? '';
     bcode.value = data['bcode'] ?? '';
+    lat.value = data['x'] ?? '';
+    lng.value = data['y'] ?? '';
 
     // 이미지 경로 복원
     final imagePaths = List<String>.from(data['image_paths'] ?? []);

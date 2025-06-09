@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -23,6 +25,8 @@ class PostProvider {
     String? region2,
     String? region3,
     String? bcode,
+    String? lat,
+    String? lng,
   }) async {
     final now = DateTime.now();
     final userId = Get.find<AuthController>().uid;
@@ -44,6 +48,8 @@ class PostProvider {
       'region2': region2,
       'region3': region3,
       'bcode': bcode,
+      'lat' : lat,
+      'lng' : lng,
     });
   }
 
@@ -60,6 +66,8 @@ class PostProvider {
     String? region2,
     String? region3,
     String? bcode,
+    String? lat,
+    String? lng,
   }) async {
     final now = DateTime.now();
     final userId = Get.find<AuthController>().uid;
@@ -77,6 +85,8 @@ class PostProvider {
       'region3': region3,
       'bcode': bcode,
       'saved_at': now,
+      'lat':lat,
+      'lng':lng,
     });
   }
 

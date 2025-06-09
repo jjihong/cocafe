@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PostModel {
@@ -13,6 +15,8 @@ class PostModel {
   final String userId;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String lat;
+  final String lng;
 
   PostModel({
     required this.id,
@@ -27,6 +31,8 @@ class PostModel {
     required this.userId,
     required this.createdAt,
     required this.updatedAt,
+    required this.lat,
+    required this.lng,
   });
 
   /// Firestore 읽기용
@@ -44,6 +50,8 @@ class PostModel {
       photos:     List<String>.from(data['photos'] ?? []),
       likeCount:     data['like_count']      ?? 0,
       userId:        data['user_id']         ?? '',
+      lat: data['lat'] ?? '',
+      lng: data['lng'] ?? '',
       createdAt:     (data['created_at'] as Timestamp).toDate(),
       updatedAt:     (data['updated_at'] as Timestamp).toDate(),
     );
@@ -62,5 +70,7 @@ class PostModel {
     'user_id':        userId,
     'created_at':     createdAt,
     'updated_at':     updatedAt,
+    'lat': lat,
+    'lng':lng,
   };
 }

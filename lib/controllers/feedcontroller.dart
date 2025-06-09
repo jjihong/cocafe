@@ -55,6 +55,8 @@ class FeedController extends GetxController {
           photos: [_randomAsset()],
           likeCount: model.likeCount,
           userId: model.userId,
+          lat: model.lat,
+          lng: model.lng,
           createdAt: model.createdAt,
           updatedAt: model.updatedAt,
         );
