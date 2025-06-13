@@ -86,7 +86,7 @@ class Post extends StatelessWidget {
                             controller.region3.value =
                                 region['region_3depth_name'] ?? '';
                             controller.bcode.value = region['b_code'] ?? '';
-                            controller.lat.value = region['x'] ?? 0.0;
+                            controller.lat.value = region['y'] ?? 0.0;
                             controller.lng.value = region['x'] ?? 0.0;
                           }
                         }

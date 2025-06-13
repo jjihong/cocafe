@@ -32,6 +32,7 @@ class FeedController extends GetxController {
 
     if (selectedBcode == null || selectedBcode.isEmpty) {
       posts.clear();
+      posts.refresh();
       return;
     }
 
@@ -68,7 +69,8 @@ class FeedController extends GetxController {
   }
 
   Future<void> reload() async {
-    await loadPosts(); // 새로고침 시 다시 로드
+    await loadPosts();
+    posts.refresh();// 새로고침 시 다시 로드
   }
 
 

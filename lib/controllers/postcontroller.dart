@@ -234,8 +234,8 @@ class PostController extends GetxController {
     region2.value = data['region2'] ?? '';
     region3.value = data['region3'] ?? '';
     bcode.value = data['bcode'] ?? '';
-    lat.value = data['x'] ?? '';
-    lng.value = data['y'] ?? '';
+    lat.value = data['y'] ?? '';
+    lng.value = data['x'] ?? '';
 
     // 이미지 경로 복원
     final imagePaths = List<String>.from(data['image_paths'] ?? []);

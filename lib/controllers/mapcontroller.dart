@@ -1,11 +1,8 @@
 import 'dart:math';
-
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 
-// controller에서 view를 참조하지 않음.
-// import '../screens/map/index.dart';
-
+// 현재 위치(펭귄) 누르면 나올 명언, 조언
 final List<String> quotes = [
   "오늘도 수고했어. 충분히 잘하고 있어.",
   "할 수 있다. 넌 충분히 강해.",
@@ -16,13 +13,15 @@ final List<String> quotes = [
   'try {\n\t매일조금씩(성장);\n} catch (의심) {\n\tthrow "넌 충분히 잘하고 있어.";\n}',
   '''String[] today = {"열정", "끈기", "너"};\nSystem.out.println(Arrays.toString(today));''',
   '''for (int i = 0; i < 무한; i++) {\n\tif (버그 == 0) break;\n\t디버깅();\n}''',
-
 ];
 
+// MapIndex관리할 컨트롤러
 class MapController {
+  // 네이버컨트롤러 관련 설정
   NaverMapController? _controller;
+  NMarker? _currentLocationMarker; // 현재 위치 마커 추적용
+  final List<NMarker> likedMarkersOnMap = []; // 지도 위에 표시된 좋아요 마커 추적
 
-  /// ✅ 외부에서 콜백 설정 가능하게 선언
   void Function(String quote)? onMarkerTapCallback;
 
   void setController(NaverMapController controller) {
@@ -30,55 +29,81 @@ class MapController {
   }
 
   Future<void> moveToCurrentLocation() async {
-    if (_controller == null) {
-      print("🛑 NaverMapController가 아직 초기화되지 않았습니다.");
-      return;
-    }
+    if (_controller == null) return;
 
     final hasPermission = await _handleLocationPermission();
-    if (!hasPermission) {
-      print("🛑 위치 권한이 거부되었습니다.");
-      return;
-    }
+    if (!hasPermission) return;
 
     try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings:
-            const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
       );
-
       final latLng = NLatLng(position.latitude, position.longitude);
 
-      // 📌 카메라 이동
       await _controller!.updateCamera(
-        NCameraUpdate.fromCameraPosition(
-            NCameraPosition(target: latLng, zoom: 15)),
+        NCameraUpdate.fromCameraPosition(NCameraPosition(target: latLng, zoom: 15)),
       );
 
-      // 📌 기존 마커 제거 (중복 방지)
-      await _controller!.clearOverlays(type: NOverlayType.marker);
+      // ✅ 기존 현재위치 마커 삭제
+      if (_currentLocationMarker != null) {
+        await _controller!.deleteOverlay(_currentLocationMarker!.info);
+      }
 
-      // 📌 마커 생성
+      // ✅ 새로운 마커 생성 및 저장
       final marker = NMarker(id: 'current_location', position: latLng);
-
-      // ✅ 이미지 설정
       marker.setIcon(NOverlayImage.fromAssetImage('asset/current_place.png'));
-
-      marker.setOnTapListener((marker) {
+      marker.setOnTapListener((_) {
         final quote = quotes[Random().nextInt(quotes.length)];
         onMarkerTapCallback?.call(quote);
       });
 
-      // 📌 지도에 마커 추가
       await _controller!.addOverlay(marker);
+      _currentLocationMarker = marker; // ✅ 추적 갱신
+
     } catch (e) {
-      print("🚨 현재 위치 이동/마커 표시 중 예외 발생: $e");
+      print("🚨 현재 위치 이동 실패: $e");
     }
   }
 
+  Future<void> addLikedMarkers(List<NMarker> markers) async {
+    if (_controller == null) return;
+
+    for (final marker in markers) {
+      final markerId = marker.info.id;
+      if (likedMarkersOnMap.any((m) => m.info.id == markerId)) {
+        print("⚠️ 이미 존재하는 마커 건너뜀: $markerId");
+        continue;
+      }
+
+      try {
+        await _controller!.addOverlay(marker);
+        likedMarkersOnMap.add(marker);
+      } catch (e) {
+        print("❗마커 추가 실패: $markerId - $e");
+      }
+    }
+  }
+
+  Future<void> clearLikedMarkers() async {
+    if (_controller == null) return;
+
+    final markersToRemove = List<NMarker>.from(likedMarkersOnMap);
+
+    for (final marker in markersToRemove) {
+      try {
+        await _controller!.deleteOverlay(marker.info);
+      } catch (e) {
+        print("❗삭제 실패 (무시됨): ${marker.info.id} - ${e.toString()}");
+      }
+    }
+
+    likedMarkersOnMap.clear();
+  }
+
+
+
   Future<bool> _handleLocationPermission() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return false;
+    if (!await Geolocator.isLocationServiceEnabled()) return false;
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {

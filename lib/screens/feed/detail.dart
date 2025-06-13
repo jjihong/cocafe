@@ -1,60 +1,103 @@
 // post_detail.dart
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../controllers/detailcontroller.dart';
+import '../../controllers/likecontroller.dart';
+import '../../services/likedmarkerservice.dart';
 import '../../widgets/Imageviewer.dart';
+import '../../widgets/buttons/likebutton.dart';
 import '../my/mypost.dart';
 
 class PostDetail extends StatefulWidget {
   final String postId;
-
-  const PostDetail({Key? key, required this.postId}) : super(key: key);
+  const PostDetail({super.key, required this.postId});
 
   @override
   State<PostDetail> createState() => _PostDetailState();
 }
 
 class _PostDetailState extends State<PostDetail> {
+  // 이미지 뷰어 관련 설정 (pagecontroller)
   final PageController _pageController = PageController();
-  final DetailController detailController = Get.put(DetailController());
   int _currentPage = 0;
+  // 좋아요 버튼 호출 판별
+  bool _likeInitialized = false;
 
+  // 게시글 불러오는 DetailController
+  final DetailController detailController = Get.put(DetailController());
+
+  // 실행 시
   @override
   void initState() {
     super.initState();
+    Get.put(LikeController());
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      detailController.fetchPost(widget.postId); // ✅ fetchPost는 build 이후 실행
+      detailController.fetchPost(widget.postId); // build 이후 게시글 불러오기(postId, 컨트롤러에 전달)
     });
-  } // initState 끝
+  }
 
+  // 종료 시
   @override
   void dispose() {
     _pageController.dispose();
-    super.dispose();
-  } // dispose 끝
+    if (Get.isRegistered<LikeController>()) {
+      final likeController = Get.find<LikeController>();
+      likeController.persistLike(); // 종료하면서 좋아요 갱신
 
+      // 지도용 마커 리스트도 새로 불러오기
+      if (Get.isRegistered<LikedMarkerService>()) {
+        Get.find<LikedMarkerService>().loadLikedMarkers();
+      }
+
+      Get.delete<LikeController>();
+    }
+    super.dispose();
+  }
+
+  // UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GetBuilder<DetailController>( // ✅ Obx 제거, GetBuilder로 교체
+      // GetBuilder는 page를 update하기 위해 사용
+      body: GetBuilder<DetailController>(
         builder: (controller) {
           if (controller.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
+          // getter 함수로 받음.
           final post = controller.post;
           final user = controller.user;
           final photos = post?['photos'] ?? [];
 
+          // post가 null이면 안내.
           if (post == null) {
             return const Center(child: Text('게시글을 불러올 수 없습니다.'));
           }
 
+          /// 좋아요 호출이 안되있거나, LikeController가 등록되지 않으면 true로 바꾸고
+          /// init해서 데이터를 넘긴다.
+          if (!_likeInitialized && Get.isRegistered<LikeController>()) {
+            _likeInitialized = true;
+            Get.find<LikeController>().init(
+              postId_: post['id'],
+              userId_: user?['uid'] ?? '',
+              initialLiked: (user?['liked_posts'] ?? []).contains(post['id']),
+              initialCount: post['like_count'] ?? 0,
+            );
+          }
+
           return CustomScrollView(
             slivers: [
+              SliverToBoxAdapter(
+                // 상태바 지키는 여백
+                child: Container(
+                  height: MediaQuery.of(context).padding.top,
+                  color: Colors.white, // 또는 원하는 배경색
+                ),
+              ),
               SliverAppBar(
                 pinned: true,
                 expandedHeight: 300.0,
@@ -63,6 +106,7 @@ class _PostDetailState extends State<PostDetail> {
                 centerTitle: true,
                 title: const Text(''),
                 foregroundColor: Colors.white,
+                automaticallyImplyLeading: false,
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(
                     alignment: Alignment.bottomCenter,
@@ -72,7 +116,7 @@ class _PostDetailState extends State<PostDetail> {
                         itemCount: photos.length,
                         onPageChanged: (index) {
                           _currentPage = index;
-                          controller.update(); // ✅ 페이지 갱신
+                          controller.update();
                         },
                         itemBuilder: (context, index) {
                           return GestureDetector(
@@ -96,9 +140,24 @@ class _PostDetailState extends State<PostDetail> {
                         },
                       ),
                       Positioned(
+                        // back button
+                        top: MediaQuery.of(context).padding.top - 20,
+                        left: 4,
+                        child: Container(
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back,
+                                color: Colors.white),
+                            onPressed: () {
+                              Get.back();
+                            },
+                          ),
+                        ),
+                      ),
+                      Positioned(
                         bottom: 12,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.5),
                             borderRadius: BorderRadius.circular(20),
@@ -124,9 +183,9 @@ class _PostDetailState extends State<PostDetail> {
                           onTap: () {
                             final uid = user['uid'];
                             final name = user['name'] ?? '사용자';
-
                             if (uid != null) {
-                              Get.to(() => MyPostsScreen(uid: uid, userName: name));
+                              Get.to(() =>
+                                  MyPostsScreen(uid: uid, userName: name));
                             } else {
                               print('uid 없음');
                             }
@@ -143,7 +202,8 @@ class _PostDetailState extends State<PostDetail> {
                               const SizedBox(width: 12),
                               Text(
                                 user['name'] ?? '알 수 없음',
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500),
                               ),
                             ],
                           ),
@@ -152,10 +212,11 @@ class _PostDetailState extends State<PostDetail> {
                       const SizedBox(height: 16),
                       Text(
                         post['title'] ?? '',
-                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 32, fontWeight: FontWeight.bold),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 1.0),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -181,19 +242,22 @@ class _PostDetailState extends State<PostDetail> {
                             ),
                             GestureDetector(
                               onTap: () async {
-                                final String query = Uri.encodeComponent(post['shop_name'] ?? post['address'] ?? '');
-                                final Uri url = Uri.parse('https://map.naver.com/v5/search/$query');
-
+                                final query = Uri.encodeComponent(
+                                    post['shop_name'] ?? post['address'] ?? '');
+                                final url = Uri.parse(
+                                    'https://map.naver.com/v5/search/$query');
                                 if (await canLaunchUrl(url)) {
-                                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                                } else {
-                                  print('네이버 지도 열기 실패');
+                                  await launchUrl(url,
+                                      mode: LaunchMode.externalApplication);
                                 }
                               },
-                              child: Image.asset(
-                                'asset/gotomap.png',
-                                width: 56,
-                                height: 56,
+                              child: Transform.translate(
+                                offset: const Offset(12, 0), // 픽셀강제 이동
+                                child: Image.asset(
+                                  'asset/gotomap.png',
+                                  width: 56,
+                                  height: 56,
+                                ),
                               ),
                             ),
                           ],
@@ -207,15 +271,9 @@ class _PostDetailState extends State<PostDetail> {
                       const SizedBox(height: 16),
                       Text("추천메뉴: ${post['recommend_menu'] ?? '없음'}"),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          const Icon(Icons.favorite_border, color: Colors.red),
-                          const SizedBox(width: 8),
-                          Text(
-                            (post['like_count'] ?? 0).toString(),
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ],
+                      Center(
+                        // 가운데 정렬
+                        child: LikeButton(),
                       ),
                     ],
                   ),

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import '../../controllers/mapcontroller.dart';
+import '../../services/likedmarkerservice.dart';
 import '../../widgets/buttons/categorybutton.dart';
-
-
 
 class MapIndex extends StatefulWidget {
   const MapIndex({super.key});
@@ -13,10 +14,12 @@ class MapIndex extends StatefulWidget {
 }
 
 class _MapIndexState extends State<MapIndex> {
-
   final mapController = MapController();
+
+  final likedMarkerService = Get.find<LikedMarkerService>(); //서비스 불러오기
   List<String> selectedCategories = [];
   final List<NMarker> markers = [];
+  bool _everRegistered = false; // 중복 방지 플래그 추가
 
   void toggleCategory(String category) {
     setState(() {
@@ -35,20 +38,34 @@ class _MapIndexState extends State<MapIndex> {
       body: Stack(
         children: [
           NaverMap(
-            options: const NaverMapViewOptions(
-              locationButtonEnable: false, // 기본 위치버튼 제거
-              indoorEnable: false,
-            ),
-            onMapReady: (controller) async {
-              mapController.setController(controller);
-              /// ✅ 콜백 등록
-              mapController.onMarkerTapCallback = (quote) {
-                showMotivationalSnackBar(context, quote);
-              };
-              /// ✅ 지도 로딩 완료 시 내 위치로 이동 + 마커 표시
-              await mapController.moveToCurrentLocation();
-            },
-          ),
+              options: const NaverMapViewOptions(
+                locationButtonEnable: false, // 기본 위치버튼 제거
+                indoorEnable: false,
+              ),
+              onMapReady: (controller) async {
+                mapController.setController(controller);
+                mapController.onMarkerTapCallback = (quote) {
+                  showMotivationalSnackBar(context, quote);
+                };
+
+                await mapController.moveToCurrentLocation();
+                await likedMarkerService.loadLikedMarkers(); // 데이터만 불러오기
+                await mapController
+                    .addLikedMarkers(likedMarkerService.likedMarkers);
+
+                if (!_everRegistered) {
+                  _everRegistered = true;
+                  print('✅ ever() 등록됨');
+
+                  ever<List<NMarker>>(likedMarkerService.likedMarkers,
+                      (markers) async {
+                    print("🌀 likedMarkers 변경 감지 → 지도 갱신 시작");
+                    await mapController.clearLikedMarkers();
+                    await mapController.addLikedMarkers(markers);
+                  });
+                }
+              }),
+
           /// 📍 현재 위치로 이동 버튼
           Positioned(
             bottom: 16,
@@ -111,8 +128,6 @@ class _MapIndexState extends State<MapIndex> {
   }
 
   void showMotivationalSnackBar(BuildContext context, String quote) {
-
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -127,5 +142,4 @@ class _MapIndexState extends State<MapIndex> {
       ),
     );
   }
-
 }
