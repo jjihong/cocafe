@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cocafe/controllers/authcontroller.dart';
 import 'package:cocafe/services/likedmarkerservice.dart';
+import 'package:cocafe/services/likeservice.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -46,6 +47,7 @@ void main() async {
   await Firebase.initializeApp();
   Get.put(AuthController());
   Get.put(FeedController());
+  Get.put(LikeService());
   final townController = Get.put(TownController());
   await townController.loadSelectedTown();
   await Get.putAsync(() => LikedMarkerService().init());

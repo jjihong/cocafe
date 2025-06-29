@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../controllers/authcontroller.dart';
 import '../../controllers/detailcontroller.dart';
 import '../../controllers/likecontroller.dart';
 import '../../services/likedmarkerservice.dart';
@@ -44,8 +45,6 @@ class _PostDetailState extends State<PostDetail> {
   void dispose() {
     _pageController.dispose();
     if (Get.isRegistered<LikeController>()) {
-      final likeController = Get.find<LikeController>();
-      likeController.persistLike(); // 종료하면서 좋아요 갱신
 
       // 지도용 마커 리스트도 새로 불러오기
       if (Get.isRegistered<LikedMarkerService>()) {
@@ -68,6 +67,9 @@ class _PostDetailState extends State<PostDetail> {
             return const Center(child: CircularProgressIndicator());
           }
 
+
+          final authC = Get.find<AuthController>();
+
           // getter 함수로 받음.
           final post = controller.post;
           final user = controller.user;
@@ -84,11 +86,12 @@ class _PostDetailState extends State<PostDetail> {
             _likeInitialized = true;
             Get.find<LikeController>().init(
               postId_: post['id'],
-              userId_: user?['uid'] ?? '',
-              initialLiked: (user?['liked_posts'] ?? []).contains(post['id']),
+              uid_: authC.uid!,      // ← 내 uid 넘기기
+              initialLiked: detailController.currentUserLikedPosts.contains(post['id']),
               initialCount: post['like_count'] ?? 0,
             );
           }
+
 
           return CustomScrollView(
             slivers: [
@@ -272,9 +275,9 @@ class _PostDetailState extends State<PostDetail> {
                       const SizedBox(height: 16),
                       Text("추천메뉴: ${post['recommend_menu'] ?? '없음'}"),
                       const SizedBox(height: 16),
-                      const Center(
+                      Center(
                         // 가운데 정렬
-                        child: LikeButton(),
+                        child:  LikeButton(),
                       ),
                     ],
                   ),
