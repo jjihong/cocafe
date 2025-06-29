@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import '../../controllers/mapcontroller.dart';
 import '../../services/likedmarkerservice.dart';
 import '../../widgets/buttons/categorybutton.dart';
+import '../../widgets/modal/liked_marker_modal.dart';
 
 class MapIndex extends StatefulWidget {
   const MapIndex({super.key});
@@ -16,11 +16,12 @@ class MapIndex extends StatefulWidget {
 class _MapIndexState extends State<MapIndex> {
   final mapController = MapController();
 
-  final likedMarkerService = Get.find<LikedMarkerService>(); //서비스 불러오기
+  final likedMarkerService = Get.find<LikedMarkerService>(); // 좋아요 서비스 불러오기
   List<String> selectedCategories = [];
   final List<NMarker> markers = [];
   bool _everRegistered = false; // 중복 방지 플래그 추가
 
+  // 카테고리 버튼 활성화
   void toggleCategory(String category) {
     setState(() {
       if (selectedCategories.contains(category)) {
@@ -48,6 +49,10 @@ class _MapIndexState extends State<MapIndex> {
                   showMotivationalSnackBar(context, quote);
                 };
 
+                mapController.onLikedMarkerTapCallback = (postId) {
+                  showLikedMarkerBottomSheet(context, postId); // 👈 여기가 핵심
+                };
+
                 await mapController.moveToCurrentLocation();
                 await likedMarkerService.loadLikedMarkers(); // 데이터만 불러오기
                 await mapController
@@ -55,18 +60,16 @@ class _MapIndexState extends State<MapIndex> {
 
                 if (!_everRegistered) {
                   _everRegistered = true;
-                  print('✅ ever() 등록됨');
 
                   ever<List<NMarker>>(likedMarkerService.likedMarkers,
                       (markers) async {
-                    print("🌀 likedMarkers 변경 감지 → 지도 갱신 시작");
                     await mapController.clearLikedMarkers();
                     await mapController.addLikedMarkers(markers);
                   });
                 }
               }),
 
-          /// 📍 현재 위치로 이동 버튼
+          /// 현재 위치로 이동 버튼
           Positioned(
             bottom: 16,
             left: 16,
@@ -75,8 +78,8 @@ class _MapIndexState extends State<MapIndex> {
                 await mapController.moveToCurrentLocation();
               },
               backgroundColor: Colors.white,
-              child: const Icon(Icons.my_location),
               heroTag: 'map_fab',
+              child: const Icon(Icons.my_location),
             ),
           ),
 
@@ -127,6 +130,7 @@ class _MapIndexState extends State<MapIndex> {
     );
   }
 
+  // 현재 위치를 누르면 명언 리스트 중 하나가 스낵바로 뜸.
   void showMotivationalSnackBar(BuildContext context, String quote) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -142,4 +146,16 @@ class _MapIndexState extends State<MapIndex> {
       ),
     );
   }
+}
+
+void showLikedMarkerBottomSheet(BuildContext context, String postId) {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (context) {
+      return LikedMarkerModal(postId: postId); // ✅ 위젯 사용
+    },
+  );
 }

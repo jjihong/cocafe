@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import '../../models/place.dart';
 
 class AddressSearchScreen extends StatefulWidget {
-  const AddressSearchScreen({Key? key}) : super(key: key);
+  const AddressSearchScreen({super.key});
 
   @override
   _AddressSearchScreenState createState() => _AddressSearchScreenState();

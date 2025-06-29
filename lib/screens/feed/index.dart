@@ -1,11 +1,8 @@
 import 'package:cocafe/controllers/feedcontroller.dart';
 import 'package:cocafe/screens/feed/post.dart';
 import 'package:cocafe/screens/feed/town.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../controllers/postcontroller.dart';
 import '../../controllers/towncontroller.dart';
@@ -20,7 +17,8 @@ class FeedIndex extends StatefulWidget {
   State<FeedIndex> createState() => _FeedIndexState();
 }
 
-class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver { // ✅ 라이프사이클 감지를 위한 믹스인 추가
+class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver {
+  // ✅ 라이프사이클 감지를 위한 믹스인 추가
   final TownController _townController = Get.find<TownController>();
   final FeedController _feedController = Get.find<FeedController>();
 
@@ -55,11 +53,11 @@ class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver { // 
                 _showPopupMenu(context);
               },
               child: Obx(() => Text(
-                _townController.selectedTown.isEmpty
-                    ? '동네 선택 v'
-                    : '${_townController.selectedTown.value} v',
-                style: const TextStyle(color: Colors.black),
-              )),
+                    _townController.selectedTown.isEmpty
+                        ? '동네 선택 v'
+                        : '${_townController.selectedTown.value} v',
+                    style: const TextStyle(color: Colors.black),
+                  )),
             );
           },
         ),
@@ -87,15 +85,15 @@ class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver { // 
             Get.to(() => Post());
           }
         },
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
         heroTag: 'feed_fab',
         // 플로팅 버튼 아이콘 (여기서는 '+' 아이콘)
         backgroundColor: Colors.black,
         // 플로팅 버튼의 배경색
-        shape: const CircleBorder(), // 동그라미 모양을 확실히 설정
+        shape: const CircleBorder(),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ), // 동그라미 모양을 확실히 설정
       ),
       // ▶ body: Firestore 스트림 구독
       body: Obx(() {
@@ -106,39 +104,39 @@ class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver { // 
           },
           child: posts.isEmpty
               ? ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: const [
-              Center(
-                child: Padding(
-                  padding: EdgeInsets.only(top: 100),
-                  child: Text('게시글이 없습니다.'),
-                ),
-              )
-            ],
-          )
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: const [
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 100),
+                        child: Text('게시글이 없습니다.'),
+                      ),
+                    )
+                  ],
+                )
               : ListView.builder(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            itemCount: posts.length,
-            itemBuilder: (context, index) {
-              final post = posts[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: GestureDetector(
-                  onTap: () async {
-                   await Get.to(() => PostDetail(postId: post.id));
-                    _feedController.reload();
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) {
+                    final post = posts[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: GestureDetector(
+                        onTap: () async {
+                          await Get.to(() => PostDetail(postId: post.id));
+                          _feedController.reload();
+                        },
+                        child: PostListItem(
+                          thumbnailUrl: post.photos[0],
+                          title: post.title,
+                          shopName: post.shopName,
+                          likeCount: post.likeCount,
+                        ),
+                      ),
+                    );
                   },
-                  child: PostListItem(
-                    thumbnailUrl: post.photos[0],
-                    title: post.title,
-                    shopName: post.shopName,
-                    likeCount: post.likeCount,
-                  ),
                 ),
-              );
-            },
-          ),
         );
       }),
     );

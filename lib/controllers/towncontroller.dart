@@ -1,14 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 import 'feedcontroller.dart'; // ✅ 추가
-
 
 class TownController extends GetxController {
   List<Map<String, dynamic>> locations = [];
@@ -36,7 +34,8 @@ class TownController extends GetxController {
             .replaceAll(' ', '');
 
         // 중복된 값이 없다면 필터링된 리스트에 추가
-        if (combined.contains(lowerQuery) && !uniqueResults.contains(combined)) {
+        if (combined.contains(lowerQuery) &&
+            !uniqueResults.contains(combined)) {
           uniqueResults.add(combined); // 중복 값 추가 방지
           return true;
         }
@@ -45,10 +44,9 @@ class TownController extends GetxController {
     }
   }
 
-
   Future<void> saveSelectedTown(Map<String, dynamic> location) async {
     final townName =
-    "${location['시도']} ${location['시군구']} ${location['읍면동']}".trim();
+        "${location['시도']} ${location['시군구']} ${location['읍면동']}".trim();
     final bcode = location['코드'].toString(); // ✅ 코드 가져오기
 
     final prefs = await SharedPreferences.getInstance();
@@ -62,7 +60,6 @@ class TownController extends GetxController {
     await feedController.reload();
   }
 
-
   Future<void> loadSelectedTown() async {
     final prefs = await SharedPreferences.getInstance();
     selectedTown.value = prefs.getString('selectedTown') ?? '';
@@ -71,7 +68,8 @@ class TownController extends GetxController {
   Future<void> setTownFromCurrentLocation() async {
     try {
       LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
         permission = await Geolocator.requestPermission();
       }
 
@@ -80,7 +78,8 @@ class TownController extends GetxController {
       );
       print('📍 현재 위치: ${position.latitude}, ${position.longitude}');
 
-      final locationData = await fetchAddressFromLatLng(position.latitude, position.longitude);
+      final locationData =
+          await fetchAddressFromLatLng(position.latitude, position.longitude);
 
       if (locationData != null) {
         final townName = locationData['townName']!;
@@ -97,9 +96,10 @@ class TownController extends GetxController {
     }
   }
 
-
-  Future<Map<String, String>?> fetchAddressFromLatLng(double lat, double lng) async {
-    final url = Uri.parse('https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=$lng&y=$lat');
+  Future<Map<String, String>?> fetchAddressFromLatLng(
+      double lat, double lng) async {
+    final url = Uri.parse(
+        'https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=$lng&y=$lat');
 
     final response = await http.get(
       url,
@@ -144,5 +144,4 @@ class TownController extends GetxController {
     final feedController = Get.find<FeedController>();
     await feedController.reload();
   }
-
 }

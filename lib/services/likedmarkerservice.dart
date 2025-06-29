@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_rx/src/rx_types/rx_types.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_disposable.dart';
 
 import '../controllers/authcontroller.dart';
 
@@ -17,7 +14,7 @@ class LikedMarkerService extends GetxService {
     return this;
   }
 
-  // 리스트만 갱신함.
+  // 리스트 갱신
   Future<void> loadLikedMarkers() async {
     final userId = Get.find<AuthController>().uid;
     if (userId == null) return;
@@ -41,10 +38,8 @@ class LikedMarkerService extends GetxService {
           id: 'liked_$postId',
           position: NLatLng(lat, lng),
         );
-        marker.setIcon(NOverlayImage.fromAssetImage('asset/likeicon.png'));
-        marker.setOnTapListener((_) {
-          print('❤️ 좋아요한 마커 클릭됨: $postId');
-        });
+        marker
+            .setIcon(const NOverlayImage.fromAssetImage('asset/likeicon.png'));
 
         newMarkers.add(marker);
       }
@@ -56,5 +51,4 @@ class LikedMarkerService extends GetxService {
       print("🔥 LikedMarkerService 에러: $e");
     }
   }
-
 }

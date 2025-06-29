@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example.jjihong.cocafe">
     <application
         android:label="cocafe"
         android:icon="@mipmap/ic_launcher"
@@ -14,7 +14,7 @@
 
                 <!-- "kakao${YOUR_NATIVE_APP_KEY}://oauth" 형식의 앱 실행 스킴 설정 -->
                 <!-- 카카오 로그인 Redirect URI -->
-                <data android:scheme="${kakao_scheme}" android:host="oauth"/>
+                <data android:scheme="kakao8f28d066654fbda0d1137816f42f700b" android:host="oauth"/>
             </intent-filter>
         </activity>
         <activity

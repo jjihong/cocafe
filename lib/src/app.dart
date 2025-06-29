@@ -1,5 +1,4 @@
 import 'package:cocafe/screens/login.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         textTheme: GoogleFonts.doHyeonTextTheme(),
         scaffoldBackgroundColor: Colors.white,
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white, // 앱바 배경 흰색
         ),
 
@@ -37,7 +36,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'cocafe',
       getPages: [
-        GetPage(name: "/", page: () => LoginScreen()),
+        GetPage(name: "/", page: () => const LoginScreen()),
         GetPage(name: '/home', page: () => const Home()), // 수정: 홈 경로 추가
       ],
     );

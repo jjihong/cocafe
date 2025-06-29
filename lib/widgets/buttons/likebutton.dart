@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/likecontroller.dart';
 
+// 좋아요 버튼
 class LikeButton extends StatelessWidget {
-  const LikeButton({Key? key}) : super(key: key);
+  const LikeButton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +12,7 @@ class LikeButton extends StatelessWidget {
       builder: (controller) {
         return GestureDetector(
           onTap: () {
-            controller.toggleLike(); // ✅ 좋아요 상태 토글
+            controller.toggleLike(); // 상태 변경
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200), // 부드러운 전환
@@ -20,7 +21,7 @@ class LikeButton extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(8),
-              color: controller.isLiked ? Colors.pink.shade50 : Colors.white, // ✅ 배경색 변화
+              color: controller.isLiked ? Colors.pink.shade50 : Colors.white,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,

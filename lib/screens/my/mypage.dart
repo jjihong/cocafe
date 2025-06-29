@@ -10,7 +10,7 @@ import '../../controllers/authcontroller.dart';
 import 'editprofile.dart';
 
 class MyPageScreen extends StatefulWidget {
-  const MyPageScreen({Key? key}) : super(key: key);
+  const MyPageScreen({super.key});
 
   @override
   State<MyPageScreen> createState() => _MyPageScreenState();
@@ -46,14 +46,14 @@ class _MyPageScreenState extends State<MyPageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cocafe - 노트북 하기 좋은곳을 공유해요!'),
+        title: const Text('Cocafe - 노트북 하기 좋은곳을 공유해요!'),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 Padding(
@@ -64,13 +64,14 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         radius: 32,
                         backgroundImage: userData?['profile_img'] != null
                             ? NetworkImage(userData!['profile_img'])
-                            : AssetImage('asset/copeng.png') as ImageProvider,
+                            : const AssetImage('asset/copeng.png')
+                                as ImageProvider,
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
                           userData?['name'] ?? '이름 없음',
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -85,16 +86,16 @@ class _MyPageScreenState extends State<MyPageScreen> {
                             }
                           });
                         },
-                        child: Text('프로필 수정',
+                        child: const Text('프로필 수정',
                             style: TextStyle(color: Colors.black)),
                       ),
                     ],
                   ),
                 ),
-                Divider(),
+                const Divider(),
                 ListTile(
-                  leading: Icon(Icons.article_outlined),
-                  title: Text('내가 쓴 글'),
+                  leading: const Icon(Icons.article_outlined),
+                  title: const Text('내가 쓴 글'),
                   onTap: () {
                     final uid = FirebaseAuth.instance.currentUser?.uid;
                     final name = userData?['name'] ?? '나';
@@ -104,23 +105,23 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.favorite_border),
-                  title: Text('좋아요 한 글'),
+                  leading: const Icon(Icons.favorite_border),
+                  title: const Text('좋아요 한 글'),
                   onTap: () {
-                    Get.to(MyLikedPostsScreen());
+                    Get.to(const MyLikedPostsScreen());
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.logout),
-                  title: Text('로그아웃'),
+                  leading: const Icon(Icons.logout),
+                  title: const Text('로그아웃'),
                   onTap: () async {
                     await authController.signOut();
                     Get.offAllNamed('/login'); // 로그아웃 후 로그인으로 이동
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.delete_outline),
-                  title: Text('회원탈퇴'),
+                  leading: const Icon(Icons.delete_outline),
+                  title: const Text('회원탈퇴'),
                   onTap: () {},
                 ),
               ],

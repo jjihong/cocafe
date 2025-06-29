@@ -1,12 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 
 import '../models/postmodel.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
-import '../models/postmodel.dart';
 
 class MyPostsController extends GetxController {
   var myPosts = <PostModel>[].obs;
@@ -23,7 +19,8 @@ class MyPostsController extends GetxController {
         .orderBy('created_at', descending: true)
         .get();
 
-    myPosts.value = snap.docs.map((doc) => PostModel.fromSnapshot(doc)).toList();
+    myPosts.value =
+        snap.docs.map((doc) => PostModel.fromSnapshot(doc)).toList();
     isLoading = false;
     update();
   }

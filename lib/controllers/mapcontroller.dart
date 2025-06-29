@@ -23,11 +23,13 @@ class MapController {
   final List<NMarker> likedMarkersOnMap = []; // 지도 위에 표시된 좋아요 마커 추적
 
   void Function(String quote)? onMarkerTapCallback;
+  void Function(String postId)? onLikedMarkerTapCallback; // ✅ 콜백 등록용
 
   void setController(NaverMapController controller) {
     _controller = controller;
   }
 
+  // 현재 위치로 보내기.
   Future<void> moveToCurrentLocation() async {
     if (_controller == null) return;
 
@@ -36,22 +38,25 @@ class MapController {
 
     try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings:
+            const LocationSettings(accuracy: LocationAccuracy.high),
       );
       final latLng = NLatLng(position.latitude, position.longitude);
 
       await _controller!.updateCamera(
-        NCameraUpdate.fromCameraPosition(NCameraPosition(target: latLng, zoom: 15)),
+        NCameraUpdate.fromCameraPosition(
+            NCameraPosition(target: latLng, zoom: 15)),
       );
 
-      // ✅ 기존 현재위치 마커 삭제
+      // 기존 현재위치 마커 삭제 후
       if (_currentLocationMarker != null) {
         await _controller!.deleteOverlay(_currentLocationMarker!.info);
       }
 
-      // ✅ 새로운 마커 생성 및 저장
+      // 새로운 마커 생성 및 저장
       final marker = NMarker(id: 'current_location', position: latLng);
-      marker.setIcon(NOverlayImage.fromAssetImage('asset/current_place.png'));
+      marker.setIcon(
+          const NOverlayImage.fromAssetImage('asset/current_place.png'));
       marker.setOnTapListener((_) {
         final quote = quotes[Random().nextInt(quotes.length)];
         onMarkerTapCallback?.call(quote);
@@ -59,12 +64,12 @@ class MapController {
 
       await _controller!.addOverlay(marker);
       _currentLocationMarker = marker; // ✅ 추적 갱신
-
     } catch (e) {
       print("🚨 현재 위치 이동 실패: $e");
     }
   }
 
+  // 좋아요 마커 생성
   Future<void> addLikedMarkers(List<NMarker> markers) async {
     if (_controller == null) return;
 
@@ -75,6 +80,12 @@ class MapController {
         continue;
       }
 
+      marker.setOnTapListener((_) {
+        print('🔥 마커 클릭됨: $markerId');
+        final postId = marker.info.id.replaceFirst('liked_', '');
+        onLikedMarkerTapCallback?.call(postId);
+      });
+
       try {
         await _controller!.addOverlay(marker);
         likedMarkersOnMap.add(marker);
@@ -84,6 +95,7 @@ class MapController {
     }
   }
 
+  // 좋아요 마커 제거
   Future<void> clearLikedMarkers() async {
     if (_controller == null) return;
 
@@ -99,8 +111,6 @@ class MapController {
 
     likedMarkersOnMap.clear();
   }
-
-
 
   Future<bool> _handleLocationPermission() async {
     if (!await Geolocator.isLocationServiceEnabled()) return false;

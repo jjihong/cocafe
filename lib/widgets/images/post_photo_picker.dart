@@ -2,9 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_reorderable_grid_view/widgets/custom_draggable.dart';
 import 'package:flutter_reorderable_grid_view/widgets/reorderable_builder.dart';
-import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-
 
 class PostPhotoPicker extends StatelessWidget {
   final List<XFile> images;
@@ -38,7 +36,8 @@ class PostPhotoPicker extends StatelessWidget {
                   final picker = ImagePicker();
                   final pickedFiles = await picker.pickMultiImage();
                   if (pickedFiles.isNotEmpty) {
-                    final newImages = [...images, ...pickedFiles].take(5).toList();
+                    final newImages =
+                        [...images, ...pickedFiles].take(5).toList();
                     onImagesChanged(newImages);
                   }
                 },

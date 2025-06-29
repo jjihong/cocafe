@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import '../../controllers/towncontroller.dart';
 
 class Town extends StatefulWidget {
@@ -18,7 +17,6 @@ class _TownState extends State<Town> {
   void initState() {
     super.initState();
     _loadData();
-
   }
 
   void _loadData() async {
@@ -31,8 +29,6 @@ class _TownState extends State<Town> {
       _townController.filterLocations(query);
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +48,7 @@ class _TownState extends State<Town> {
               onChanged: _onSearchChanged,
               leading: IconButton(
                 icon: const Icon(Icons.location_on),
-                  onPressed: _townController.setTownFromCurrentLocation,
+                onPressed: _townController.setTownFromCurrentLocation,
               ),
               hintText: '동네를 설정하세요.',
               trailing: [
@@ -79,7 +75,8 @@ class _TownState extends State<Town> {
                               .trim(),
                         ),
                         onTap: () {
-                          _townController.saveSelectedTown(location); // ✅ 위치 정보 전체 전달
+                          _townController
+                              .saveSelectedTown(location); // ✅ 위치 정보 전체 전달
                           Get.back();
                         },
                       );

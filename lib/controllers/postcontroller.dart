@@ -5,10 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../providers/postprovider.dart';
-import '../screens/feed/index.dart';
 import '../screens/home.dart';
 
 class PostController extends GetxController {
@@ -39,7 +37,6 @@ class PostController extends GetxController {
     {'label': '조용한', 'icon': Icons.volume_mute},
     {'label': '스터디룸', 'icon': Icons.book},
   ];
-
 
   @override
   void onInit() {
@@ -105,9 +102,8 @@ class PostController extends GetxController {
         region2: region2.value,
         region3: region3.value,
         bcode: bcode.value,
-        lat : lat.value,
-        lng : lng.value,
-
+        lat: lat.value,
+        lng: lng.value,
       );
       await postProvider.deleteDraft();
       clearAll();
@@ -154,7 +150,7 @@ class PostController extends GetxController {
     );
 
     final resp = await http.get(uri, headers: {
-      'Authorization': '${dotenv.get('KAKAO_REST_API_KEY')}',
+      'Authorization': dotenv.get('KAKAO_REST_API_KEY'),
     });
 
     print('DEBUG: status=${resp.statusCode}, body=${resp.body}'); // ⬅️ 꼭 확인
@@ -218,7 +214,6 @@ class PostController extends GetxController {
     return draft != null;
   }
 
-
   Future<void> loadDraftIfExists() async {
     final data = await postProvider.loadDraft();
     if (data == null) return;
@@ -241,5 +236,4 @@ class PostController extends GetxController {
     final imagePaths = List<String>.from(data['image_paths'] ?? []);
     images.assignAll(imagePaths.map((p) => XFile(p)).toList());
   }
-
 }

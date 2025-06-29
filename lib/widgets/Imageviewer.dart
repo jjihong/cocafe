@@ -6,7 +6,8 @@ class ImageViewer extends StatelessWidget {
   final List<String> photos;
   final int initialIndex;
 
-  const ImageViewer({Key? key, required this.photos, required this.initialIndex}) : super(key: key);
+  const ImageViewer(
+      {super.key, required this.photos, required this.initialIndex});
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +61,8 @@ class ImageViewer extends StatelessWidget {
               builder: (_, value, __) => Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.6),
                     borderRadius: BorderRadius.circular(20),

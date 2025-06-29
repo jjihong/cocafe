@@ -4,8 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 
-import '../screens/home.dart';
-
 class ProfileController extends GetxController {
   final name = ''.obs;
   final imageFile = Rx<File?>(null);
@@ -28,7 +26,8 @@ class ProfileController extends GetxController {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
     final doc = await userRef.get();
     final data = doc.data();
     final currentName = data?['name'] ?? '';
@@ -49,7 +48,8 @@ class ProfileController extends GetxController {
     final newImage = uploadedImageUrl ?? imageUrl.value;
 
     final nameChanged = newName != currentName;
-    final imageChanged = uploadedImageUrl != null && uploadedImageUrl != currentImage;
+    final imageChanged =
+        uploadedImageUrl != null && uploadedImageUrl != currentImage;
 
     if (!nameChanged && !imageChanged) {
       Get.back();

@@ -1,10 +1,8 @@
 import 'dart:io';
-import 'package:cocafe/screens/home.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../controllers/profilecontroller.dart';
-import 'mypage.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   final String? currentName;
@@ -51,7 +49,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('프로필 수정'),
+        title: const Text('프로필 수정'),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -75,14 +73,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         backgroundImage: file != null
                             ? FileImage(file)
                             : (controller.imageUrl.value.isNotEmpty
-                            ? NetworkImage(controller.imageUrl.value)
-                            : AssetImage('asset/copeng.png')) as ImageProvider,
+                                    ? NetworkImage(controller.imageUrl.value)
+                                    : const AssetImage('asset/copeng.png'))
+                                as ImageProvider,
                       ),
                       Positioned(
                         right: 0,
                         bottom: 0,
                         child: Container(
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Colors.black54,
                             shape: BoxShape.circle,
                           ),
@@ -103,7 +102,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             TextField(
               controller: nameTextController,
               onChanged: controller.setName,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: '이름을 입력하세요',
                 border: OutlineInputBorder(),
               ),
@@ -115,9 +114,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               },
               style: ElevatedButton.styleFrom(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
               ),
-              child: Text('수정하기'),
+              child: const Text('수정하기'),
             ),
           ],
         ),

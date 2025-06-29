@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/postmodel.dart';
-import '../screens/feed/post.dart';  // PostModel import
+// PostModel import
 import 'dart:math';
 
 class FeedController extends GetxController {
@@ -19,6 +19,7 @@ class FeedController extends GetxController {
     ];
     return assets[Random().nextInt(assets.length)]; // Random() 직접 호출
   }
+
   @override
   void onInit() {
     super.onInit();
@@ -70,9 +71,6 @@ class FeedController extends GetxController {
 
   Future<void> reload() async {
     await loadPosts();
-    posts.refresh();// 새로고침 시 다시 로드
+    posts.refresh(); // 새로고침 시 다시 로드
   }
-
-
 }
-

@@ -3,13 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 
 import '../screens/home.dart';
 
 class AuthService {
-
   static Future<void> signInWithKakao() async {
     if (await isKakaoTalkInstalled()) {
       try {
@@ -21,7 +19,7 @@ class AuthService {
         );
 
         final credentialUser =
-        await FirebaseAuth.instance.signInWithCredential(credential);
+            await FirebaseAuth.instance.signInWithCredential(credential);
         final user = credentialUser.user;
 
         if (user != null) {
@@ -40,7 +38,7 @@ class AuthService {
           );
 
           final credentialUser =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+              await FirebaseAuth.instance.signInWithCredential(credential);
           final user = credentialUser.user;
 
           if (user != null) {
@@ -60,7 +58,7 @@ class AuthService {
         );
 
         final credentialUser =
-        await FirebaseAuth.instance.signInWithCredential(credential);
+            await FirebaseAuth.instance.signInWithCredential(credential);
         final user = credentialUser.user;
 
         if (user != null) {
@@ -73,7 +71,8 @@ class AuthService {
   }
 
   static Future<void> handleUserAfterLogin(auth.User user) async {
-    final userRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+    final userRef =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
     final doc = await userRef.get();
 
     if (!doc.exists) {

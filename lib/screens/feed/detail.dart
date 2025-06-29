@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../controllers/detailcontroller.dart';
 import '../../controllers/likecontroller.dart';
 import '../../services/likedmarkerservice.dart';
-import '../../widgets/Imageviewer.dart';
+import '../../widgets/imageviewer.dart';
 import '../../widgets/buttons/likebutton.dart';
 import '../my/mypost.dart';
 
@@ -34,7 +34,8 @@ class _PostDetailState extends State<PostDetail> {
     super.initState();
     Get.put(LikeController());
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      detailController.fetchPost(widget.postId); // build 이후 게시글 불러오기(postId, 컨트롤러에 전달)
+      detailController
+          .fetchPost(widget.postId); // build 이후 게시글 불러오기(postId, 컨트롤러에 전달)
     });
   }
 
@@ -271,7 +272,7 @@ class _PostDetailState extends State<PostDetail> {
                       const SizedBox(height: 16),
                       Text("추천메뉴: ${post['recommend_menu'] ?? '없음'}"),
                       const SizedBox(height: 16),
-                      Center(
+                      const Center(
                         // 가운데 정렬
                         child: LikeButton(),
                       ),

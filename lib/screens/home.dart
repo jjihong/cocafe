@@ -3,18 +3,17 @@ import 'package:cocafe/screens/my/mypage.dart';
 import 'package:flutter/material.dart';
 
 import 'feed/index.dart';
-import 'map/index.dart';
 
 final List<BottomNavigationBarItem> myTabs = <BottomNavigationBarItem>[
-  BottomNavigationBarItem(icon: Icon(Icons.feed), label: '동네'),
-  BottomNavigationBarItem(icon: Icon(Icons.map), label: '지도'),
-  BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: '마이'),
+  const BottomNavigationBarItem(icon: Icon(Icons.feed), label: '동네'),
+  const BottomNavigationBarItem(icon: Icon(Icons.map), label: '지도'),
+  const BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: '마이'),
 ];
 
 final List<Widget> myTabItems = [
-  FeedIndex(),
-  MapIndex(),
-  MyPageScreen()
+  const FeedIndex(),
+  const MapIndex(),
+  const MyPageScreen()
 ];
 
 class Home extends StatefulWidget {
