@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../screens/home.dart';
 
 class AuthService {
@@ -108,6 +109,41 @@ class AuthService {
       Get.offAll(() => const Home());
     }
   }
+
+  static Future<void> deleteAccount() async {
+    try {
+      final user = auth.FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('로그인된 사용자가 없습니다.');
+
+      // 🔁 재인증을 위해 카카오 토큰 재요청
+      final token = await UserApi.instance.loginWithKakaoAccount();
+
+      final provider = auth.OAuthProvider('oidc.cocafe');
+      final credential = provider.credential(
+        idToken: token.idToken,
+        accessToken: token.accessToken,
+      );
+
+      // 🔐 재인증 시도
+      await user.reauthenticateWithCredential(credential);
+
+      // 🔥 Firestore 유저 문서 삭제
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
+
+      // 🔥 Firebase 계정 삭제
+      await user.delete();
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      print('✅ 회원탈퇴 완료');
+    } catch (e) {
+      print('❌ 회원탈퇴 실패: $e');
+      rethrow;
+    }
+  }
+
+
 }
 
 

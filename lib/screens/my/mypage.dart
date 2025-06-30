@@ -1,6 +1,7 @@
 // ✅ mypage.dart (StatefulWidget으로 리팩터링)
 import 'package:cocafe/screens/my/mylikedposts.dart';
 import 'package:cocafe/screens/my/mypost.dart';
+import 'package:cocafe/screens/my/withdrawpage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -122,8 +123,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 ListTile(
                   leading: const Icon(Icons.delete_outline),
                   title: const Text('회원탈퇴'),
-                  onTap: () {},
-                ),
+                  onTap: () {
+                    final name = userData?['name'] ?? '익명'; // ✅ null 대응
+                    Get.to(() => WithdrawPage(userName: name));
+                  },),
               ],
             ),
     );
