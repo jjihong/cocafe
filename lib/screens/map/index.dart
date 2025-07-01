@@ -30,6 +30,20 @@ class _MapIndexState extends State<MapIndex> {
         selectedCategories.add(category);
       }
     });
+
+    // 카테고리 변경 시 마커 필터링 적용
+    _applyFilter();
+  }
+
+  // 필터링 적용 메서드
+  void _applyFilter() {
+    if (selectedCategories.isEmpty) {
+      // 선택된 카테고리가 없으면 모든 마커 표시
+      likedMarkerService.applyFilter([]);
+    } else {
+      // 선택된 카테고리로 필터링
+      likedMarkerService.applyFilter(selectedCategories);
+    }
   }
 
   @override
@@ -56,16 +70,17 @@ class _MapIndexState extends State<MapIndex> {
                 await mapController.moveToCurrentLocation();
                 await likedMarkerService.loadLikedMarkers(); // 데이터만 불러오기
                 await mapController
-                    .addLikedMarkers(likedMarkerService.likedMarkers);
+                    .addLikedMarkers(likedMarkerService.filteredMarkers);
 
                 if (!_everRegistered) {
                   _everRegistered = true;
 
-                  ever<List<NMarker>>(likedMarkerService.likedMarkers,
-                      (markers) async {
-                    await mapController.clearLikedMarkers();
-                    await mapController.addLikedMarkers(markers);
-                  });
+                  // 필터링된 마커 목록 변경 감지
+                  ever<List<NMarker>>(likedMarkerService.filteredMarkers,
+                          (markers) async {
+                        await mapController.clearLikedMarkers();
+                        await mapController.addLikedMarkers(markers);
+                      });
                 }
               }),
 

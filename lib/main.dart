@@ -48,8 +48,7 @@ void main() async {
   Get.put(AuthController());
   Get.put(FeedController());
   Get.put(LikeService());
-  final townController = Get.put(TownController());
-  await townController.loadSelectedTown();
+  Get.put(TownController(), permanent: true);
   await Get.putAsync(() => LikedMarkerService().init());
 
   runApp(const MyApp());

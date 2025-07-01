@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../controllers/towncontroller.dart';
 import '../screens/home.dart';
 
 class AuthService {
@@ -95,7 +96,14 @@ class AuthService {
       } else {
         print('ℹ️ 이미 가입된 유저');
       }
-      // 로그인 성공 후 홈으로 이동
+
+      // ✅ 동네 컨트롤러 재등록 (이전 기록 초기화 목적)
+      if (Get.isRegistered<TownController>()) {
+        Get.delete<TownController>();
+      }
+      Get.put(TownController()); // onInit → 자동 위치 설정
+
+      // ✅ 홈으로 이동
       Get.offAll(() => const Home());
 
     } catch (error) {
@@ -105,7 +113,11 @@ class AuthService {
         '로그인은 성공했지만 사용자 정보 저장에 실패했습니다.',
         snackPosition: SnackPosition.BOTTOM,
       );
-      // 그래도 홈으로 이동 (로그인은 성공했으므로)
+
+      final townController = Get.find<TownController>();
+      await townController.reinitialize(); // 새 로그인 유저 기준 재설정
+
+
       Get.offAll(() => const Home());
     }
   }

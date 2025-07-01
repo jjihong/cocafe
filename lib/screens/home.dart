@@ -1,7 +1,11 @@
 import 'package:cocafe/screens/map/index.dart';
 import 'package:cocafe/screens/my/mypage.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
+import '../controllers/feedcontroller.dart';
+import '../services/likeservice.dart';
 import 'feed/index.dart';
 
 final List<BottomNavigationBarItem> myTabs = <BottomNavigationBarItem>[
@@ -30,6 +34,18 @@ class _HomeState extends State<Home> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+  @override
+  void initState() {
+    super.initState();
+
+    // ✅ 필요한 컨트롤러들 미리 생성
+    if (!Get.isRegistered<FeedController>()) {
+      Get.put(FeedController());
+    }
+    if (!Get.isRegistered<LikeService>()) {
+      Get.put(LikeService());
+    }
   }
 
   @override

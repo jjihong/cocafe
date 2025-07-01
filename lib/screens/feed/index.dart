@@ -25,8 +25,15 @@ class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); // ✅ 옵저버 등록
+    WidgetsBinding.instance.addObserver(this);
+
+    // ✅ 앱 시작 시 현재 위치로 동네 설정 → 피드 로드
+    Future.microtask(() async {
+      await _townController.setTownFromCurrentLocation(); // ✅ 현재 위치로 강제 설정
+      await _feedController.reload(); // ✅ 새 동네 기준으로 피드 다시 로드
+    });
   }
+
 
   @override
   void dispose() {
