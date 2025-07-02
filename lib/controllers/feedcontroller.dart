@@ -1,24 +1,11 @@
-// page에 피드 뿌려주기
-
 // lib/controllers/feed_controller.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/postmodel.dart';
-// PostModel import
-import 'dart:math';
 
 class FeedController extends GetxController {
   final RxList<PostModel> posts = <PostModel>[].obs;
-
-  String _randomAsset() {
-    final assets = [
-      'asset/codog.png',
-      'asset/copeng.png',
-      'asset/cocat.png',
-    ];
-    return assets[Random().nextInt(assets.length)]; // Random() 직접 호출
-  }
 
   @override
   void onInit() {
@@ -43,30 +30,12 @@ class FeedController extends GetxController {
         .orderBy('created_at', descending: true)
         .get();
 
+    // 이제 랜덤 이미지 처리가 필요 없음 - 모든 게시글에 이미지가 있을 것임
     final list = snap.docs.map((doc) {
-      final model = PostModel.fromSnapshot(doc);
-      if (model.photos.isEmpty) {
-        return PostModel(
-          id: model.id,
-          title: model.title,
-          shopName: model.shopName,
-          address: model.address,
-          content: model.content,
-          recommendMenu: model.recommendMenu,
-          tags: model.tags,
-          photos: [_randomAsset()],
-          likeCount: model.likeCount,
-          userId: model.userId,
-          lat: model.lat,
-          lng: model.lng,
-          createdAt: model.createdAt,
-          updatedAt: model.updatedAt,
-        );
-      }
-      return model;
+      return PostModel.fromSnapshot(doc);
     }).toList();
 
-    posts.assignAll(list); // 스트림이 아니라 한 번에 할당
+    posts.assignAll(list);
   }
 
   Future<void> reload() async {

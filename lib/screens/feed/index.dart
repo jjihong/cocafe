@@ -34,7 +34,6 @@ class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver {
     });
   }
 
-
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this); // ✅ 옵저버 해제
@@ -60,11 +59,11 @@ class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver {
                 _showPopupMenu(context);
               },
               child: Obx(() => Text(
-                    _townController.selectedTown.isEmpty
-                        ? '동네 선택 v'
-                        : '${_townController.selectedTown.value} v',
-                    style: const TextStyle(color: Colors.black),
-                  )),
+                _townController.selectedTown.isEmpty
+                    ? '동네 선택 v'
+                    : '${_townController.selectedTown.value} v',
+                style: const TextStyle(color: Colors.black),
+              )),
             );
           },
         ),
@@ -111,39 +110,45 @@ class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver {
           },
           child: posts.isEmpty
               ? ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: const [
-                    Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 100),
-                        child: Text('게시글이 없습니다.'),
-                      ),
-                    )
-                  ],
-                )
-              : ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                  itemCount: posts.length,
-                  itemBuilder: (context, index) {
-                    final post = posts[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: GestureDetector(
-                        onTap: () async {
-                          await Get.to(() => PostDetail(postId: post.id));
-                          _feedController.reload();
-                        },
-                        child: PostListItem(
-                          thumbnailUrl: post.photos[0],
-                          title: post.title,
-                          shopName: post.shopName,
-                          likeCount: post.likeCount,
-                        ),
-                      ),
-                    );
-                  },
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: const [
+              Center(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 100),
+                  child: Text('게시글이 없습니다.'),
                 ),
+              )
+            ],
+          )
+              : ListView.builder(
+            padding:
+            const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              final post = posts[index];
+
+              // ✅ 안전한 썸네일 URL 가져오기
+              final thumbnailUrl = post.photos.isNotEmpty
+                  ? post.photos[0]
+                  : ''; // 빈 문자열이거나 기본 이미지 URL
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: GestureDetector(
+                  onTap: () async {
+                    await Get.to(() => PostDetail(postId: post.id));
+                    _feedController.reload();
+                  },
+                  child: PostListItem(
+                    thumbnailUrl: thumbnailUrl,
+                    title: post.title,
+                    shopName: post.shopName,
+                    likeCount: post.likeCount,
+                  ),
+                ),
+              );
+            },
+          ),
         );
       }),
     );

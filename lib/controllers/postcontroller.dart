@@ -1,13 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // 추가: 에셋 파일 읽기용
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import '../providers/postprovider.dart';
 import '../screens/home.dart';
+import 'dart:math'; // 추가: 랜덤 선택용
 
 class PostController extends GetxController {
   // 입력
@@ -38,11 +41,18 @@ class PostController extends GetxController {
     {'label': '스터디룸', 'icon': Icons.book},
   ];
 
+  // 기본 이미지 목록
+  final List<String> _defaultAssets = [
+    'asset/codog.png',
+    'asset/copeng.png',
+    'asset/cocat.png',
+  ];
+
   @override
   void onInit() {
     super.onInit();
     clearAll(); // 초기화 먼저 하고
-    loadDraftIfExists(); // 임시저장 불러오기
+    loadDraftIfExists(); // 임시저장 불러우기
   }
 
   // 이미지 선택
@@ -57,6 +67,29 @@ class PostController extends GetxController {
   // 이미지 삭제
   void removeImage(int index) {
     images.removeAt(index);
+  }
+
+  /// 기본 이미지를 Firebase Storage에 업로드하고 URL 반환
+  Future<String> _uploadDefaultImage() async {
+    try {
+      // 랜덤하게 기본 이미지 선택
+      final randomAsset = _defaultAssets[Random().nextInt(_defaultAssets.length)];
+
+      // 에셋 파일을 Uint8List로 읽기
+      final ByteData data = await rootBundle.load(randomAsset);
+      final Uint8List bytes = data.buffer.asUint8List();
+
+      // 파일명 생성 (중복 방지)
+      final fileName = 'default_${DateTime.now().millisecondsSinceEpoch}_${randomAsset.split('/').last}';
+
+      // Firebase Storage에 업로드
+      final snap = await storage.ref('posts/$fileName').putData(bytes);
+
+      return await snap.ref.getDownloadURL();
+    } catch (e) {
+      print('기본 이미지 업로드 실패: $e');
+      rethrow;
+    }
   }
 
   Future<void> submitPost() async {
@@ -74,20 +107,30 @@ class PostController extends GetxController {
       Get.snackbar('오류', '제목과 가게 이름은 필수입니다.');
       return;
     }
+
     isUploading.value = true; // ✨ 업로드 시작 표시
     List<String> imageUrls = [];
-    try {
-      const int concurrency = 3;
-      for (int i = 0; i < images.length; i += concurrency) {
-        final batch = images.skip(i).take(concurrency).map((xfile) async {
-          final bytes = await File(xfile.path).readAsBytes();
-          final name = '${DateTime.now().millisecondsSinceEpoch}_${xfile.name}';
-          final snap = await storage.ref('posts/$name').putData(bytes);
-          return snap.ref.getDownloadURL();
-        }).toList();
 
-        final results = await Future.wait(batch);
-        imageUrls.addAll(results);
+    try {
+      // 2) 이미지 업로드 처리
+      if (images.isNotEmpty) {
+        // 사용자가 선택한 이미지들 업로드
+        const int concurrency = 3;
+        for (int i = 0; i < images.length; i += concurrency) {
+          final batch = images.skip(i).take(concurrency).map((xfile) async {
+            final bytes = await File(xfile.path).readAsBytes();
+            final name = '${DateTime.now().millisecondsSinceEpoch}_${xfile.name}';
+            final snap = await storage.ref('posts/$name').putData(bytes);
+            return snap.ref.getDownloadURL();
+          }).toList();
+
+          final results = await Future.wait(batch);
+          imageUrls.addAll(results);
+        }
+      } else {
+        // 이미지가 없으면 기본 이미지 업로드
+        final defaultImageUrl = await _uploadDefaultImage();
+        imageUrls.add(defaultImageUrl);
       }
 
       await postProvider.uploadPost(
@@ -105,6 +148,7 @@ class PostController extends GetxController {
         lat: lat.value,
         lng: lng.value,
       );
+
       await postProvider.deleteDraft();
       clearAll();
       isUploading.value = false; // ✨ 항상 false로 복귀

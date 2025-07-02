@@ -48,7 +48,7 @@ class _PostDetailState extends State<PostDetail> {
 
       // 지도용 마커 리스트도 새로 불러오기
       if (Get.isRegistered<LikedMarkerService>()) {
-        Get.find<LikedMarkerService>().loadLikedMarkers();
+        Get.find<LikedMarkerService>().refresh();
       }
 
       Get.delete<LikeController>();

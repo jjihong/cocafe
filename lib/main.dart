@@ -49,7 +49,7 @@ void main() async {
   Get.put(FeedController());
   Get.put(LikeService());
   Get.put(TownController(), permanent: true);
-  await Get.putAsync(() => LikedMarkerService().init());
+  Get.lazyPut<LikeService>(() => LikeService(), fenix: true);
 
   runApp(const MyApp());
 }
