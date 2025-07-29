@@ -64,4 +64,17 @@ class DetailController extends GetxController {
     final data = snap.data();
     _currentUserLikedPosts = List<String>.from(data?['liked_posts'] ?? []);
   }
+
+  bool get isMyPost {
+    final authC = Get.find<AuthController>();
+    return _post?['user_id'] == authC.uid;
+  }
+  
+  Future<void> deletePost() async {
+    final postId = _post?['id'];
+    if (postId == null) return;
+    await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
+  }
+
+
 }

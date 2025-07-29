@@ -24,17 +24,12 @@ class TownController extends GetxController {
   // 앱 초기 진입 시 자동 위치 설정
   Future<void> _initializeLocation() async {
     try {
-      await loadLocations(); // JSON 파일 로드
-      await loadSelectedTown(); // 저장된 동네 로드
-
-      // 저장된 동네가 없으면 현재 위치로 자동 설정
-      if (selectedTown.value.isEmpty) {
-        print('📍 저장된 동네가 없음 → 현재 위치로 자동 설정 시작');
-        await _autoSetupCurrentLocation();
-      } else {
-        print('✅ 저장된 동네 사용: ${selectedTown.value}');
-        isAutoSetupComplete.value = true;
-      }
+      // JSON 로드와 위치 설정을 병렬로 처리
+      print('📍 앱 시작 → 현재 위치로 자동 설정 시작');
+      await Future.wait([
+        loadLocations(), // JSON 파일 로드
+        _autoSetupCurrentLocation(), // 위치 설정
+      ]);
     } catch (e) {
       print('❌ 초기 위치 설정 실패: $e');
       isAutoSetupComplete.value = true; // 실패해도 완료로 처리
@@ -58,9 +53,21 @@ class TownController extends GetxController {
         return;
       }
 
-      final Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      // 먼저 빠른 캐시된 위치 시도, 실패하면 새 위치 가져오기
+      Position? position;
+      try {
+        position = await Geolocator.getLastKnownPosition();
+        if (position == null) {
+          throw Exception('캐시된 위치 없음');
+        }
+        print('📍 캐시된 위치 사용: ${position.latitude}, ${position.longitude}');
+      } catch (e) {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 8),
+        );
+        print('📍 새 위치 획득: ${position.latitude}, ${position.longitude}');
+      }
       print('📍 현재 위치: ${position.latitude}, ${position.longitude}');
 
       final locationData =

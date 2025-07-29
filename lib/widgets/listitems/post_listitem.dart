@@ -79,11 +79,24 @@ class PostListItem extends StatelessWidget {
                   right: -15,
                   child: PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert, size: 18),
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     onSelected: (value) {
                       // 수정, 삭제 처리
                     },
                     itemBuilder: (context) => [
                       const PopupMenuItem(value: 'edit', child: Text('수정')),
+                      PopupMenuItem<String>(
+                        enabled: false,
+                        height: 1,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          height: 0.5,
+                          color: Colors.grey[300],
+                        ),
+                      ),
                       const PopupMenuItem(value: 'delete', child: Text('삭제')),
                     ],
                   ),

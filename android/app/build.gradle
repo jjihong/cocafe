@@ -44,8 +44,16 @@ android {
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // .env 파일에서 nativeAppKey 읽어오기
+        def envFile = project.rootProject.file('../../.env')
+        def envProps = new Properties()
+        if (envFile.exists()) {
+            envFile.withInputStream { envProps.load(it) }
+        }
+        
         manifestPlaceholders = [
-                kakao_scheme: "${project.property("NativeAppKey")}"
+                kakao_scheme: envProps.getProperty("nativeAppKey", "")
         ]
     }
 

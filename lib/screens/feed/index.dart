@@ -29,8 +29,9 @@ class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver {
 
     // ✅ 앱 시작 시 현재 위치로 동네 설정 → 피드 로드
     Future.microtask(() async {
-      await _townController.setTownFromCurrentLocation(); // ✅ 현재 위치로 강제 설정
-      await _feedController.reload(); // ✅ 새 동네 기준으로 피드 다시 로드
+      await _townController.waitForAutoSetup(); // 자동 설정 완료까지 대기
+      await _feedController.reload(); // 설정된 동네로 피드 로드
+
     });
   }
 
@@ -163,10 +164,23 @@ class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver {
     await showMenu(
       context: context,
       position: RelativeRect.fromLTRB(dx, dy, dx, dy),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       items: [
         const PopupMenuItem<String>(
           value: 'townSetting', // 값 추가
           child: Text('동네 설정'),
+        ),
+        PopupMenuItem<String>(
+          enabled: false,
+          height: 1,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            height: 0.5,
+            color: Colors.grey[300],
+          ),
         ),
         const PopupMenuItem<String>(
           value: 'currentLocation',

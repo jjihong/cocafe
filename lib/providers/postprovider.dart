@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 
 import '../controllers/authcontroller.dart';
+import '../models/postmodel.dart';
 
 class PostProvider {
   final CollectionReference postsRef =
@@ -11,6 +12,7 @@ class PostProvider {
   final CollectionReference draftsRef =
   FirebaseFirestore.instance.collection('drafts');
 
+  // 글 생성
   Future<void> uploadPost({
     required String title,
     required String shopName,
@@ -49,6 +51,23 @@ class PostProvider {
       'lat' : lat,
       'lng' : lng,
     });
+  }
+
+  // 글 수정
+  Future<void> updatePost({
+    required String postId,
+    required Map<String, dynamic> data,
+  }) async {
+    final now = DateTime.now();
+    data['updated_at'] = now;
+    await postsRef.doc(postId).update(data);
+  }
+
+  /// 단건 조회
+  Future<PostModel?> getPostById(String postId) async {
+    final snap = await postsRef.doc(postId).get();
+    if (!snap.exists) return null;
+    return PostModel.fromSnapshot(snap);
   }
 
   // 임시저장
@@ -100,4 +119,6 @@ class PostProvider {
     final userId = Get.find<AuthController>().uid;
     await draftsRef.doc(userId).delete();
   }
+
+  //
 }

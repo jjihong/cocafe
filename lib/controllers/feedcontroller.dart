@@ -30,7 +30,6 @@ class FeedController extends GetxController {
         .orderBy('created_at', descending: true)
         .get();
 
-    // 이제 랜덤 이미지 처리가 필요 없음 - 모든 게시글에 이미지가 있을 것임
     final list = snap.docs.map((doc) {
       return PostModel.fromSnapshot(doc);
     }).toList();
