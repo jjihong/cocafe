@@ -2,7 +2,6 @@ import 'package:cocafe/screens/map/index.dart';
 import 'package:cocafe/screens/my/mypage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
 import '../controllers/feedcontroller.dart';
 import '../services/likedmarkerservice.dart';

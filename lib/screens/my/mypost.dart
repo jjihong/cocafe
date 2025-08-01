@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../../controllers/authcontroller.dart';
 import '../../controllers/mypostscontroller.dart';
-import '../../widgets/listitems/post_listitem.dart';
+import '../../widgets/post/listitems/post_listitem.dart';
 import '../feed/detail.dart';
 
 class MyPostsScreen extends StatefulWidget {
@@ -69,6 +69,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
                   title: post.title,
                   shopName: post.shopName,
                   likeCount: post.likeCount,
+                  tags: post.tags,
                 ),
               );
             },

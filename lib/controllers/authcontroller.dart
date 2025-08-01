@@ -2,7 +2,6 @@ import 'package:cocafe/controllers/postcontroller.dart';
 import 'package:cocafe/controllers/towncontroller.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/likedmarkerservice.dart';
 import '../services/likeservice.dart';

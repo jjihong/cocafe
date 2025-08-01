@@ -5,8 +5,8 @@ import 'package:get/get.dart';
 import '../../controllers/mapcontroller.dart';
 import '../../models/likedmarkerdata.dart';
 import '../../services/likedmarkerservice.dart';
-import '../../widgets/buttons/categorybutton.dart';
-import '../../widgets/modal/liked_marker_modal.dart';
+import '../../widgets/common/buttons/categorybutton.dart';
+import '../../widgets/common/modal/liked_marker_modal.dart';
 
 class MapIndex extends StatefulWidget {
   const MapIndex({super.key});

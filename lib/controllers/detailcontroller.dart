@@ -16,6 +16,10 @@ class DetailController extends GetxController {
   List<String> _currentUserLikedPosts = [];
   List<String> get currentUserLikedPosts => _currentUserLikedPosts;
 
+  // 추천 글 목록
+  List<Map<String, dynamic>> _recommendedPosts = [];
+  List<Map<String, dynamic>> get recommendedPosts => _recommendedPosts;
+
   // 기존 getter
   Map<String, dynamic>? get post => _post;
   Map<String, dynamic>? get user => _user;
@@ -44,6 +48,9 @@ class DetailController extends GetxController {
 
     // 수정: 현재 로그인한 사용자의 liked_posts 불러오기
     await fetchCurrentUserLikes();
+
+    // 추천 글 로딩
+    await fetchRecommendedPosts();
 
     isLoading = false;
     update();
@@ -76,5 +83,38 @@ class DetailController extends GetxController {
     await FirebaseFirestore.instance.collection('posts').doc(postId).delete();
   }
 
+  /// 같은 동네(bcode) 다른 글 4개 가져오기
+  Future<void> fetchRecommendedPosts() async {
+    final currentBcode = _post?['bcode'];
+    final currentPostId = _post?['id'];
+    
+    if (currentBcode == null || currentPostId == null) {
+      _recommendedPosts = [];
+      return;
+    }
 
+    try {
+      final query = await FirebaseFirestore.instance
+          .collection('posts')
+          .where('bcode', isEqualTo: currentBcode)
+          .orderBy('created_at', descending: true)
+          .limit(10) // 여분으로 더 가져와서 현재 글 제외
+          .get();
+
+      final posts = query.docs
+          .where((doc) => doc.id != currentPostId) // 현재 글 제외
+          .take(4) // 4개만 선택
+          .map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return data;
+          })
+          .toList();
+
+      _recommendedPosts = posts;
+    } catch (e) {
+      print('🔥 추천 글 로딩 실패: $e');
+      _recommendedPosts = [];
+    }
+  }
 }

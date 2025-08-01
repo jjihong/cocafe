@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:cocafe/controllers/authcontroller.dart';
-import 'package:cocafe/services/likedmarkerservice.dart';
 import 'package:cocafe/services/likeservice.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';

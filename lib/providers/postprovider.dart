@@ -32,7 +32,7 @@ class PostProvider {
     final userId = Get.find<AuthController>().uid;
 
     // ① 게시글 문서 먼저 추가
-    final docRef = await postsRef.add({
+    await postsRef.add({
       'title': title,
       'shop_name': shopName,
       'address': address,

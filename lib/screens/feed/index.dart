@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 
 import '../../controllers/postcontroller.dart';
 import '../../controllers/towncontroller.dart';
-import '../../widgets/listitems/post_listitem.dart';
-import '../../widgets/popupmenus/resume_draft_dialog.dart';
+import '../../widgets/post/listitems/post_listitem.dart';
+import '../../widgets/common/popupmenus/resume_draft_dialog.dart';
 import 'detail.dart';
 
 class FeedIndex extends StatefulWidget {
@@ -145,6 +145,7 @@ class _FeedIndexState extends State<FeedIndex> with WidgetsBindingObserver {
                     title: post.title,
                     shopName: post.shopName,
                     likeCount: post.likeCount,
+                    tags: post.tags,
                   ),
                 ),
               );

@@ -7,14 +7,24 @@ import '../../controllers/authcontroller.dart';
 import '../../controllers/detailcontroller.dart';
 import '../../controllers/likecontroller.dart';
 import '../../services/likedmarkerservice.dart';
-import '../../widgets/imageviewer.dart';
-import '../../widgets/buttons/likebutton.dart';
+import '../../widgets/post/image_viewer.dart';
+import '../../widgets/common/buttons/likebutton.dart';
+import '../../widgets/navigation/slide_routes.dart';
+import '../../widgets/post/recommendation_grid.dart';
 import '../my/mypost.dart';
 import 'post.dart';
 
 class PostDetail extends StatefulWidget {
   final String postId;
-  const PostDetail({super.key, required this.postId});
+  final List<HistoryItem> historyStack;
+  final double initialScrollOffset;
+  
+  const PostDetail({
+    super.key, 
+    required this.postId,
+    this.historyStack = const [],
+    this.initialScrollOffset = 0.0,
+  });
 
   @override
   State<PostDetail> createState() => _PostDetailState();
@@ -26,6 +36,11 @@ class _PostDetailState extends State<PostDetail> {
   int _currentPage = 0;
   // 좋아요 버튼 호출 판별
   bool _likeInitialized = false;
+  // 스크롤 위치 복원 완료 판별
+  bool _scrollRestored = false;
+  
+  // 스크롤 위치 관리
+  final ScrollController _scrollController = ScrollController();
 
   // 게시글 불러오는 DetailController
   final DetailController detailController = Get.put(DetailController());
@@ -40,11 +55,53 @@ class _PostDetailState extends State<PostDetail> {
           .fetchPost(widget.postId); // build 이후 게시글 불러오기(postId, 컨트롤러에 전달)
     });
   }
+  
+  // 스크롤 위치 복원 함수
+  void _restoreScrollPosition() {
+    if (widget.initialScrollOffset > 0 && _scrollController.hasClients) {
+      print('📚 스크롤 위치 즉시 복원: ${widget.initialScrollOffset}');
+      _scrollController.jumpTo(widget.initialScrollOffset);
+      print('📚 스크롤 위치 복원 완료: ${_scrollController.offset}');
+    }
+  }
+
+  // 커스텀 뒤로가기 처리
+  void _handleBackPressed() {
+    if (widget.historyStack.isNotEmpty) {
+      // 히스토리에서 이전 글 정보 가져오기
+      final previousItem = widget.historyStack.last;
+      final newHistory = List<HistoryItem>.from(widget.historyStack)..removeLast();
+      
+      print('📚 히스토리에서 복원: ${widget.postId} → ${previousItem.postId}');
+      print('📚 스크롤 위치 복원: ${previousItem.scrollOffset}');
+      print('📚 남은 히스토리: ${newHistory.length}개');
+      
+      // 뒤로가기는 왼쪽에서 슬라이드 애니메이션
+      Navigator.pushReplacement(
+        context,
+        SlideLeftRoute(
+          page: PostDetail(
+            postId: previousItem.postId,
+            historyStack: newHistory,
+            initialScrollOffset: previousItem.scrollOffset,
+          ),
+        ),
+      ).then((_) {
+        print('📚 백 네비게이션 완료');
+      }).catchError((e) {
+        print('📚 백 네비게이션 오류: $e');
+      });
+    } else {
+      print('📚 히스토리 비어있음 - Feed로 복귀');
+      Navigator.pop(context); // Feed로 복귀
+    }
+  }
 
   // 종료 시
   @override
   void dispose() {
     _pageController.dispose();
+    _scrollController.dispose();
     if (Get.isRegistered<LikeController>()) {
 
       // 지도용 마커 리스트도 새로 불러오기
@@ -54,13 +111,23 @@ class _PostDetailState extends State<PostDetail> {
 
       Get.delete<LikeController>();
     }
+    // DetailController도 정리
+    if (Get.isRegistered<DetailController>()) {
+      Get.delete<DetailController>();
+    }
     super.dispose();
   }
 
   // UI
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        print('📚 WillPopScope 트리거 - 시스템 뒤로가기');
+        _handleBackPressed();
+        return false; // 기본 뒤로가기 동작 차단
+      },
+      child: Scaffold(
       // GetBuilder는 page를 update하기 위해 사용
       body: GetBuilder<DetailController>(
         builder: (controller) {
@@ -68,6 +135,13 @@ class _PostDetailState extends State<PostDetail> {
             return const Center(child: CircularProgressIndicator());
           }
 
+          // 데이터 로딩 완료 후 스크롤 위치 복원 (한 번만)
+          if (!_scrollRestored) {
+            _scrollRestored = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _restoreScrollPosition();
+            });
+          }
 
           final authC = Get.find<AuthController>();
 
@@ -95,6 +169,7 @@ class _PostDetailState extends State<PostDetail> {
 
 
           return CustomScrollView(
+            controller: _scrollController,
             slivers: [
               SliverToBoxAdapter(
                 // 상태바 지키는 여백
@@ -145,15 +220,13 @@ class _PostDetailState extends State<PostDetail> {
                         },
                       ),
                       Positioned(
-                        // back button
+                        // 커스텀 뒤로가기 버튼
                         top: MediaQuery.of(context).padding.top - 20,
                         left: 4,
                         child: IconButton(
                           icon: const Icon(Icons.arrow_back,
                               color: Colors.white, size: 24, weight: 700),
-                          onPressed: () {
-                            Get.back();
-                          },
+                          onPressed: _handleBackPressed,
                         ),
                       ),
                       Positioned(
@@ -423,75 +496,54 @@ class _PostDetailState extends State<PostDetail> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 16),
+                        
+                        // 태그 표시 섹션
+                        if (post['tags'] != null && (post['tags'] as List).isNotEmpty) ...[
+                          Wrap(
+                            spacing: 8.0,
+                            runSpacing: 8.0,
+                            children: (post['tags'] as List<dynamic>).map<Widget>((tag) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue[50],
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.blue[200]!),
+                                ),
+                                child: Text(
+                                  '#$tag',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.blue[700],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        
+                        const SizedBox(height: 16),
                         Center(
                           child: LikeButton(),
                         ),
                         const SizedBox(height: 40),
                         
-                        // "이런 곳은 어때요?" 섹션
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[50],
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey[200]!),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.recommend, color: Colors.blue[600], size: 22),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    "이런 곳은 어때요?",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.grey[800],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                "비슷한 분위기의 카페들을 더 찾아보세요. 코딩하기 좋은 환경의 다른 장소들도 둘러보실 수 있습니다.",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  height: 1.5,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Container(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    // 비슷한 카페 목록으로 이동하는 로직
-                                    Get.back(); // 임시로 뒤로가기
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue[600],
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    elevation: 0,
-                                  ),
-                                  child: const Text(
-                                    "비슷한 카페 둘러보기",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                        // "이 동네 다른 카페" 섹션
+                        RecommendationGrid(
+                          recommendedPosts: controller.recommendedPosts,
+                          currentPostId: widget.postId,
+                          historyStack: widget.historyStack,
+                          scrollController: _scrollController,
+                          onNavigateToPost: (postId, historyStack, initialScrollOffset) {
+                            return PostDetail(
+                              postId: postId,
+                              historyStack: historyStack,
+                              initialScrollOffset: initialScrollOffset,
+                            );
+                          },
                         ),
                         const SizedBox(height: 24),
                       ],
@@ -502,6 +554,7 @@ class _PostDetailState extends State<PostDetail> {
             ],
           );
         },
+      ),
       ),
     );
   }

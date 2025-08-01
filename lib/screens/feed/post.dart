@@ -1,13 +1,13 @@
-import 'package:cocafe/widgets/buttons/categorybutton.dart';
-import 'package:cocafe/widgets/popupmenus/exit_confirm_wrapper.dart';
+import 'package:cocafe/widgets/common/buttons/categorybutton.dart';
+import 'package:cocafe/widgets/common/popupmenus/exit_confirm_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../controllers/postcontroller.dart';
 import '../../models/place.dart';
-import '../../widgets/buttons/submit_button.dart';
-import '../../widgets/images/post_photo_picker.dart';
-import '../../widgets/textfields/custom_text_field.dart';
+import '../../widgets/common/buttons/submit_button.dart';
+import '../../widgets/common/images/post_photo_picker.dart';
+import '../../widgets/common/textfields/custom_text_field.dart';
 import 'address.dart';
 
 class Post extends StatefulWidget {

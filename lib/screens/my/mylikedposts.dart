@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../controllers/mylikedpostscontroller.dart';
-import '../../widgets/listitems/post_listitem.dart';
+import '../../widgets/post/listitems/post_listitem.dart';
 import '../feed/detail.dart';
 
 class MyLikedPostsScreen extends StatelessWidget {
@@ -46,6 +46,7 @@ class MyLikedPostsScreen extends StatelessWidget {
                   title: post.title,
                   shopName: post.shopName,
                   likeCount: post.likeCount,
+                  tags: post.tags,
                 ),
               );
             },

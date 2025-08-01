@@ -18,6 +18,7 @@ class MapController {
   NaverMapController? _naver;
   NMarker? _me;                               // 펭귄 마커
   final _likedOnMap = <NMarker>[];            // 현재 지도에 올라간 좋아요
+  bool _isSyncing = false;                    // 동기화 중복 방지
 
   void Function(String)?   onPenguinTap;
   void Function(String)?   onLikedTap;        // postId 돌려줌
@@ -57,17 +58,24 @@ class MapController {
 
   /* ─────────────────────── liked markers ── */
 
-  /// datas 전체와 지도 상태를 ‘동기화’한다.
+  /// datas 전체와 지도 상태를 '동기화'한다.
   Future<void> syncLikedMarkers(List<LikedMarkerData> datas) async {
-    if (_naver == null) return;
+    if (_naver == null || _isSyncing) return;
+    _isSyncing = true;
 
     final wantIds = datas.map((d) => 'liked_${d.postId}').toSet();
 
-    /* 1) 빠진 것 제거 */
+    /* 1) 빠진 것 제거 - 개별적으로 안전하게 처리 */
     final toRemove = _likedOnMap.where((m) => !wantIds.contains(m.info.id)).toList();
-    if (toRemove.isNotEmpty) {
-      await Future.wait(toRemove.map((m) => _naver!.deleteOverlay(m.info)));
-      _likedOnMap.removeWhere((m) => !wantIds.contains(m.info.id));
+    for (final marker in toRemove) {
+      try {
+        await _naver!.deleteOverlay(marker.info);
+        _likedOnMap.remove(marker);
+      } catch (e) {
+        print('❗ deleteOverlay 실패: ${marker.info.id} - $e');
+        // 실패해도 리스트에서는 제거 (이미 삭제된 상태일 수 있음)
+        _likedOnMap.remove(marker);
+      }
     }
 
     /* 2) 새로 필요한 것 추가 */
@@ -89,6 +97,8 @@ class MapController {
         print('❗ addOverlay 실패: $id - $e');
       }
     }
+    
+    _isSyncing = false;
   }
 
   /* ───────────────────────── util ── */
