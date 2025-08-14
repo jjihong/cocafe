@@ -50,14 +50,9 @@ android {
         def envProps = new Properties()
         if (envFile.exists()) {
             envFile.withInputStream { envProps.load(it) }
-            println "✅ .env 파일 로드 성공"
-            println "🔑 nativeAppKey: ${envProps.getProperty("nativeAppKey", "NOT_FOUND")}"
-        } else {
-            println "❌ .env 파일을 찾을 수 없음: ${envFile.absolutePath}"
         }
         
         def nativeKey = envProps.getProperty("nativeAppKey", "")
-        println "🚀 manifestPlaceholders kakao_scheme: ${nativeKey}"
         
         manifestPlaceholders = [
                 kakao_scheme: nativeKey

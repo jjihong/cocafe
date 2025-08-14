@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
-import 'package:shared_preferences/shared_preferences.dart;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/towncontroller.dart';
 import '../screens/home.dart';
 
