@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
@@ -25,13 +26,17 @@ class TownController extends GetxController {
   Future<void> _initializeLocation() async {
     try {
       // JSON 로드와 위치 설정을 병렬로 처리
-      print('📍 앱 시작 → 현재 위치로 자동 설정 시작');
+      if (kDebugMode) {
+        print('📍 앱 시작 → 현재 위치로 자동 설정 시작');
+      }
       await Future.wait([
         loadLocations(), // JSON 파일 로드
         _autoSetupCurrentLocation(), // 위치 설정
       ]);
     } catch (e) {
-      print('❌ 초기 위치 설정 실패: $e');
+      if (kDebugMode) {
+        print('❌ 초기 위치 설정 실패: $e');
+      }
       isAutoSetupComplete.value = true; // 실패해도 완료로 처리
     }
   }
@@ -48,7 +53,9 @@ class TownController extends GetxController {
       // 권한이 거부되면 스킵
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
-        print('📍 위치 권한 거부됨 → 자동 설정 스킵');
+        if (kDebugMode) {
+          print('📍 위치 권한 거부됨 → 자동 설정 스킵');
+        }
         isAutoSetupComplete.value = true;
         return;
       }
@@ -60,13 +67,17 @@ class TownController extends GetxController {
         if (position == null) {
           throw Exception('캐시된 위치 없음');
         }
-        print('📍 캐시된 위치 사용: ${position.latitude}, ${position.longitude}');
+        if (kDebugMode) {
+          print('📍 캐시된 위치 사용 완료');
+        }
       } catch (e) {
         position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.medium,
           timeLimit: Duration(seconds: 8),
         );
-        print('📍 새 위치 획득: ${position.latitude}, ${position.longitude}');
+        if (kDebugMode) {
+          print('📍 새 위치 획득 완료');
+        }
       }
       print('📍 현재 위치: ${position.latitude}, ${position.longitude}');
 
@@ -77,12 +88,16 @@ class TownController extends GetxController {
         final townName = locationData['townName']!;
         final bcode = locationData['bcode']!;
         await _saveTownAndBcode(townName, bcode);
-        print('✅ 자동 위치 설정 완료: $townName / $bcode');
+        if (kDebugMode) {
+          print('✅ 자동 위치 설정 완료: $townName');
+        }
       } else {
         print('❌ 현재 위치의 동네를 찾을 수 없음');
       }
     } catch (e) {
-      print('❌ 자동 위치 설정 실패: $e');
+      if (kDebugMode) {
+        print('❌ 자동 위치 설정 실패: $e');
+      }
     } finally {
       isAutoSetupComplete.value = true; // 성공/실패 관계없이 완료로 처리
     }
@@ -128,7 +143,9 @@ class TownController extends GetxController {
     await prefs.setString('selectedBcode', bcode); // ✅ bcode 저장
     selectedTown.value = townName;
 
-    print('✅ 동네 저장 완료: $townName / $bcode');
+    if (kDebugMode) {
+      print('✅ 동네 저장 완료: $townName');
+    }
 
     final feedController = Get.find<FeedController>();
     await feedController.reload();
@@ -161,7 +178,9 @@ class TownController extends GetxController {
         final bcode = locationData['bcode']!;
         await _saveTownAndBcode(townName, bcode);
         Get.back();
-        print('📍 수동 현재 위치 설정 완료: $townName / $bcode');
+        if (kDebugMode) {
+          print('📍 수동 현재 위치 설정 완료: $townName');
+        }
         Get.snackbar('알림', '현재 위치로 동네가 설정되었습니다: $townName');
       } else {
         Get.snackbar('알림', '현재 위치의 동네를 찾을 수 없습니다.');
@@ -198,8 +217,10 @@ class TownController extends GetxController {
 
         final townName = "$sido $sigungu $eupmyeondong".trim();
 
-        print('🧭 카카오 주소: $townName');
-        print('🏷️ 법정동 코드(bcode): $bcode');
+        if (kDebugMode) {
+          print('🧭 카카오 주소: $townName');
+          print('🏷️ 법정동 코드 확인 완룼');
+        }
 
         return {
           'townName': townName,
@@ -207,7 +228,9 @@ class TownController extends GetxController {
         }; // ✅ Map 리턴
       }
     } else {
-      print('❌ 주소 조회 실패: ${response.body}');
+      if (kDebugMode) {
+        print('❌ 주소 조회 실패');
+      }
     }
     return null;
   }

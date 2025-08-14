@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 
 import 'package:cocafe/controllers/authcontroller.dart';
 import 'package:cocafe/services/likeservice.dart';
@@ -29,14 +30,18 @@ void main() async {
     clientId: dotenv.get('naverMapClientId'),
     onAuthFailed: (ex) {
       isAuthSuccess = false;
-      log("❌ 네이버맵 인증 실패: $ex");
+      if (kDebugMode) {
+        log("❌ 네이버맵 인증 실패");
+      }
     },
   );
 
-  if (isAuthSuccess) {
-    log("✅ 네이버맵 인증 성공!");
-  } else {
-    log("❌ 인증 실패. 지도를 사용할 수 없습니다.");
+  if (kDebugMode) {
+    if (isAuthSuccess) {
+      log("✅ 네이버맵 인증 성공!");
+    } else {
+      log("❌ 인증 실패. 지도를 사용할 수 없습니다.");
+    }
   }
 
   KakaoSdk.init(

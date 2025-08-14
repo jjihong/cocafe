@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MapLinkController {
@@ -19,7 +20,9 @@ class MapLinkController {
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
-        print("❗URL 실행 불가: $url");
+        if (kDebugMode) {
+          print("❗URL 실행 불가");
+        }
       }
     } catch (e) {
       print('🔥 네이버 지도 검색 실패: $e');

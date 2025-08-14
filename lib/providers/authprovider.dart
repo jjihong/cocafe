@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart;
 import '../controllers/towncontroller.dart';
 import '../screens/home.dart';
 
@@ -25,7 +26,7 @@ class AuthService {
             return;
           }
 
-          // 카카오톡 로그인 실패 시 카카오계정 로그인으로 대체
+          // 카카오톡 로그인 실패 시 카카오계정 로그인으로 대체3
           token = await UserApi.instance.loginWithKakaoAccount();
         }
       } else {
@@ -92,9 +93,13 @@ class AuthService {
           'town': null,
           'createdAt': FieldValue.serverTimestamp(),
         });
-        print('✅ Firestore에 유저 정보 저장 완료');
+        if (kDebugMode) {
+          print('✅ Firestore에 유저 정보 저장 완료');
+        }
       } else {
-        print('ℹ️ 이미 가입된 유저');
+        if (kDebugMode) {
+          print('ℹ️ 이미 가입된 유저');
+        }
       }
 
       // ✅ 동네 컨트롤러 재등록 (이전 기록 초기화 목적)
@@ -148,7 +153,9 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
 
-      print('✅ 회원탈퇴 완료');
+      if (kDebugMode) {
+        print('✅ 회원탈퇴 완료');
+      }
     } catch (e) {
       print('❌ 회원탈퇴 실패: $e');
       rethrow;

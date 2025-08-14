@@ -45,15 +45,22 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-        // .env 파일에서 nativeAppKey 읽어오기
-        def envFile = project.rootProject.file('../../.env')
+        // .env 파일에서 nativeAppKey 읽어오기 (Flutter 프로젝트 루트)
+        def envFile = file('../../.env')
         def envProps = new Properties()
         if (envFile.exists()) {
             envFile.withInputStream { envProps.load(it) }
+            println "✅ .env 파일 로드 성공"
+            println "🔑 nativeAppKey: ${envProps.getProperty("nativeAppKey", "NOT_FOUND")}"
+        } else {
+            println "❌ .env 파일을 찾을 수 없음: ${envFile.absolutePath}"
         }
         
+        def nativeKey = envProps.getProperty("nativeAppKey", "")
+        println "🚀 manifestPlaceholders kakao_scheme: ${nativeKey}"
+        
         manifestPlaceholders = [
-                kakao_scheme: envProps.getProperty("nativeAppKey", "")
+                kakao_scheme: nativeKey
         ]
     }
 
